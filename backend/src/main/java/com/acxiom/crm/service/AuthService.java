@@ -8,6 +8,8 @@ import com.acxiom.crm.repository.*;
 import com.acxiom.crm.security.JwtTokenProvider;
 import com.acxiom.crm.security.UserPrincipal;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -17,6 +19,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -25,9 +30,12 @@ import java.util.UUID;
 @Service
 public class AuthService {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
@@ -42,9 +50,13 @@ public class AuthService {
     @Value("${acxiom.security.lockout-duration-minutes:15}")
     private int lockoutDurationMinutes;
 
+    @Value("${acxiom.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
     public AuthService(UserRepository userRepository,
                        RoleRepository roleRepository,
                        RefreshTokenRepository refreshTokenRepository,
+                       PasswordResetTokenRepository passwordResetTokenRepository,
                        PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
                        JwtTokenProvider tokenProvider,
@@ -52,6 +64,7 @@ public class AuthService {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
@@ -270,6 +283,85 @@ public class AuthService {
         String clientIp = getClientIp(httpRequest);
         auditService.logEvent(admin.getId(), admin.getEmail(), "RESET_PASSWORD_ADMIN", "USER",
                 user.getId().toString(), null, null, "SUCCESS", "Admin reset password for user: " + user.getEmail(), clientIp);
+    }
+
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request, HttpServletRequest httpRequest) {
+        String email = request.getEmail().trim().toLowerCase();
+        String clientIp = getClientIp(httpRequest);
+
+        Optional<User> userOpt = userRepository.findByEmailIgnoreCase(email);
+        if (userOpt.isEmpty()) {
+            auditService.logEvent(null, email, "FORGOT_PASSWORD_ATTEMPT", "AUTH",
+                    null, null, null, "INFO", "Password reset requested for non-existing email: " + email, clientIp);
+            return;
+        }
+
+        User user = userOpt.get();
+        passwordResetTokenRepository.invalidateAllActiveUserTokens(user);
+
+        String rawToken = UUID.randomUUID().toString() + "-" + UUID.randomUUID().toString();
+        String tokenHash = hashToken(rawToken);
+        Instant expiresAt = Instant.now().plus(Duration.ofHours(1));
+
+        PasswordResetToken resetToken = new PasswordResetToken(user, tokenHash, expiresAt);
+        passwordResetTokenRepository.save(resetToken);
+
+        String resetLink = frontendUrl + "/reset-password?token=" + rawToken;
+        logger.info("\n===========================================================\n" +
+                "[PASSWORD RESET SIMULATION - ACXIOMCRM]\n" +
+                "Recipient: {}\n" +
+                "Reset Link: {}\n" +
+                "Token Hash (SHA-256): {}\n" +
+                "Validity: 1 hour (expires at: {})\n" +
+                "===========================================================",
+                user.getEmail(), resetLink, tokenHash, expiresAt);
+
+        auditService.logEvent(user.getId(), user.getEmail(), "FORGOT_PASSWORD_REQUEST", "AUTH",
+                user.getId().toString(), null, null, "SUCCESS", "Generated password reset link", clientIp);
+    }
+
+    @Transactional
+    public void resetPasswordWithToken(ResetPasswordWithTokenRequest request, HttpServletRequest httpRequest) {
+        String clientIp = getClientIp(httpRequest);
+        String tokenHash = hashToken(request.getToken().trim());
+
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByTokenHash(tokenHash)
+                .orElseThrow(() -> new InvalidOperationException("Invalid or expired password reset token."));
+
+        if (resetToken.isUsed() || resetToken.isExpired()) {
+            throw new InvalidOperationException("Password reset link has expired or has already been used. Please request a new one.");
+        }
+
+        User user = resetToken.getUser();
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        user.resetFailedLogins();
+        user.unlockAccount();
+        userRepository.save(user);
+
+        resetToken.setUsed(true);
+        passwordResetTokenRepository.save(resetToken);
+
+        refreshTokenRepository.revokeAllUserTokens(user);
+
+        auditService.logEvent(user.getId(), user.getEmail(), "PASSWORD_RESET_SUCCESS", "AUTH",
+                user.getId().toString(), null, null, "SUCCESS", "Password reset successfully completed via token", clientIp);
+    }
+
+    private String hashToken(String token) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(token.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not available", e);
+        }
     }
 
     private String createRefreshToken(User user) {

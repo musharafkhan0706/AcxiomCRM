@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Sparkles, Lock, Mail, Eye, EyeOff, ShieldCheck, UserCheck } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
@@ -24,7 +24,12 @@ export const LoginPage: React.FC = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Authentication failed. Please verify credentials.';
+      let msg = 'Authentication failed. Please verify credentials.';
+      if (err.response?.data?.message) {
+        msg = err.response.data.message;
+      } else if (err.code === 'ERR_NETWORK' || !err.response) {
+        msg = 'Unable to connect to CRM backend at http://localhost:8085. Please ensure backend service is running.';
+      }
       setError(msg);
     } finally {
       setIsLoading(false);
@@ -95,6 +100,15 @@ export const LoginPage: React.FC = () => {
                 </button>
               }
             />
+
+            <div className="flex items-center justify-end pt-1">
+              <Link
+                to="/forgot-password"
+                className="text-xs font-semibold text-[#097C87] hover:text-[#097C87]/80 hover:underline transition-colors"
+              >
+                Forgot your password?
+              </Link>
+            </div>
 
             <Button
               type="submit"

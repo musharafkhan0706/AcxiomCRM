@@ -106,6 +106,10 @@ public class UserService {
         Role role = roleRepository.findByName(request.getRole())
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + request.getRole()));
 
+        boolean deactivatingOrDemoting = (!request.isActive() && user.isActive()) ||
+                (request.getRole() != RoleName.ADMIN && user.getRole().getName() == RoleName.ADMIN);
+        validateNotLastActiveAdmin(user, deactivatingOrDemoting);
+
         String oldData = user.getName() + " (" + user.getRole().getName() + ")";
 
         user.setName(request.getName().trim());
@@ -138,6 +142,8 @@ public class UserService {
             throw new InvalidOperationException("Administrators cannot demote their own account role.");
         }
 
+        validateNotLastActiveAdmin(user, request.getRole() != RoleName.ADMIN && user.getRole().getName() == RoleName.ADMIN);
+
         Role role = roleRepository.findByName(request.getRole())
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + request.getRole()));
 
@@ -161,6 +167,8 @@ public class UserService {
             throw new InvalidOperationException("You cannot deactivate your own administrative account.");
         }
 
+        validateNotLastActiveAdmin(user, user.isActive());
+
         boolean newStatus = !user.isActive();
         user.setActive(newStatus);
         if (!newStatus) {
@@ -183,6 +191,8 @@ public class UserService {
         if (user.getId().equals(admin.getId()) && !active) {
             throw new InvalidOperationException("You cannot deactivate your own administrative account.");
         }
+
+        validateNotLastActiveAdmin(user, !active && user.isActive());
 
         user.setActive(active);
         if (!active) {
@@ -210,6 +220,17 @@ public class UserService {
                 "Administrator manually unlocked account for user: " + user.getEmail(), null);
 
         return UserResponse.fromEntity(updated);
+    }
+
+    private void validateNotLastActiveAdmin(User targetUser, boolean willDeactivateOrDemote) {
+        if (willDeactivateOrDemote && targetUser.getRole().getName() == RoleName.ADMIN && targetUser.isActive()) {
+            long activeAdminCount = userRepository.findAll().stream()
+                    .filter(u -> u.isActive() && u.getRole().getName() == RoleName.ADMIN)
+                    .count();
+            if (activeAdminCount <= 1) {
+                throw new InvalidOperationException("Cannot deactivate or demote the only active system administrator.");
+            }
+        }
     }
 }
 

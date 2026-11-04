@@ -82,7 +82,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.ok("User updated successfully", updated));
     }
 
-    @PatchMapping("/{id}/role")
+    @RequestMapping(value = "/{id}/role", method = {RequestMethod.PATCH, RequestMethod.PUT})
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Assign a role to a user (Admin only)")
     public ResponseEntity<ApiResponse<UserResponse>> updateUserRole(

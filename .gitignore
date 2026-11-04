@@ -31,3 +31,6 @@ tools/
 # Environment files with sensitive credentials
 .env
 
+# Scratch and temporary testing scripts
+scratch/
+

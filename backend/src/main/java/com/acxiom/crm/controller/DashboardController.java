@@ -26,7 +26,7 @@ public class DashboardController {
         this.dashboardService = dashboardService;
     }
 
-    @GetMapping
+    @GetMapping({"", "/metrics"})
     @Operation(summary = "Get role-scoped dashboard metrics, charts, and quick widgets with date range filtering")
     public ResponseEntity<ApiResponse<DashboardMetricsResponse>> getDashboard(
             @RequestParam(defaultValue = "ALL") String period,

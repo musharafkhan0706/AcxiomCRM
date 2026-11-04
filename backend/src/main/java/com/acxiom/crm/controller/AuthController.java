@@ -78,5 +78,21 @@ public class AuthController {
         authService.changePassword(currentUser.getId(), request, httpRequest);
         return ResponseEntity.ok(ApiResponse.ok("Password changed successfully", "Password updated"));
     }
+
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Request password reset link via email")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request,
+                                                              HttpServletRequest httpRequest) {
+        authService.forgotPassword(request, httpRequest);
+        return ResponseEntity.ok(ApiResponse.ok("If that email address is registered, a password recovery link has been sent.", "Recovery email initiated"));
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "Reset password using secure recovery token")
+    public ResponseEntity<ApiResponse<String>> resetPassword(@Valid @RequestBody ResetPasswordWithTokenRequest request,
+                                                             HttpServletRequest httpRequest) {
+        authService.resetPasswordWithToken(request, httpRequest);
+        return ResponseEntity.ok(ApiResponse.ok("Password has been reset successfully. You can now log in with your new password.", "Password reset complete"));
+    }
 }
 

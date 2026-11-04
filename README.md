@@ -283,6 +283,21 @@ All accounts are pre-seeded via Flyway migrations and `DataInitializer` with str
    - Visual inspection modal compares previous state (`oldValue`) vs updated state (`newValue`) JSON diffs.
    - Tabular reports with date range filtering and client-side CSV extract downloads.
 
+7. **Password Recovery & Reset Workflow**:
+   - Cryptographically secure SHA-256 token-based password reset workflow (`POST /api/auth/forgot-password` and `POST /api/auth/reset-password`).
+   - Single-use tokens with 1-hour expiration; all active refresh tokens invalidated upon password change.
+   - Strict password complexity enforced (min 8 chars, uppercase, lowercase, number, special character).
+   - In dev mode, simulation link logged directly to backend console for rapid testing.
+
+8. **Rate Limiting & Admin Account Protection**:
+   - In-memory sliding-window token bucket filter protecting sensitive endpoints (`/api/auth/login`, `/api/auth/forgot-password`, `/api/auth/reset-password`, `/api/auth/refresh`).
+   - Exceeded limits return `HTTP 429 Too Many Requests` with RFC-compliant `Retry-After` header.
+   - Guard against administrative lockout: platform strictly blocks deactivating or demoting the only active system administrator.
+
+9. **Frontend Code-Splitting & Route-Level Lazy Loading**:
+   - All feature pages code-split via `React.lazy()` with `Suspense` and animated skeleton fallbacks.
+   - Initial JavaScript bundle reduced from 756 kB to 330 kB for instant page load speed.
+
 ---
 
 ## 6. Quick Start & Setup Instructions
@@ -305,8 +320,8 @@ docker-compose ps
 
 Services will be accessible at:
 - **Frontend Application**: `http://localhost:5173`
-- **Backend API**: `http://localhost:8080/api`
-- **Swagger / OpenAPI Documentation**: `http://localhost:8080/swagger-ui.html`
+- **Backend API**: `http://localhost:8085/api` (or `:8080` in Docker)
+- **Swagger / OpenAPI Documentation**: `http://localhost:8085/swagger-ui/index.html`
 - **PostgreSQL**: `localhost:5432` (db: `acxiomcrm`, user: `acxiom_user`, pass: `AcxiomSecure2026!`)
 - **Redis**: `localhost:6379`
 
@@ -315,19 +330,19 @@ Services will be accessible at:
 ### Option B: Running Locally (Development Mode)
 
 #### 1. Backend (Java 17 & Maven)
-The backend uses an embedded PostgreSQL-compatible H2 in-memory database with automatic Flyway schema migration for instant local development without installing Postgres:
+The backend uses an embedded PostgreSQL-compatible H2 in-memory database with automatic Flyway schema migration (V1, V2, V3) for instant local development without installing Postgres:
 
 ```bash
 # From project root
-tools\maven\bin\mvn.cmd clean spring-boot:run -f backend/pom.xml
-# Backend will start on http://localhost:8080
+tools\maven\bin\mvn.cmd spring-boot:run -f backend/pom.xml
+# Backend will start on http://localhost:8085 (with Swagger UI at http://localhost:8085/swagger-ui/index.html)
 ```
 
 #### 2. Frontend (Node.js & Vite)
 
 ```bash
 # From project root
-npm --prefix frontend run dev
+npm.cmd --prefix frontend run dev
 # Frontend will start on http://localhost:5173
 ```
 
