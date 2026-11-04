@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { Sparkles, Lock, Mail, Eye, EyeOff, ShieldCheck, UserCheck } from 'lucide-react';
+import { Building2, Lock, Mail, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 
@@ -24,9 +24,27 @@ export const LoginPage: React.FC = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (err: any) {
+      const status = err.response?.status;
+      const responseData = err.response?.data;
       let msg = 'Authentication failed. Please verify credentials.';
-      if (err.response?.data?.message) {
-        msg = err.response.data.message;
+
+      if (status === 401) {
+        msg = responseData?.message || 'Invalid email or password. Please verify your credentials.';
+      } else if (status === 423 || (typeof responseData?.message === 'string' && responseData.message.toLowerCase().includes('locked'))) {
+        msg = responseData?.message || 'Your account is temporarily locked due to multiple failed login attempts. Please contact an administrator or try again later.';
+      } else if (status === 429) {
+        msg = responseData?.message || 'Too many requests. Rate limit exceeded. Please wait a moment before trying again.';
+      } else if (status === 403) {
+        const rawBody = typeof responseData === 'string' ? responseData : responseData?.message || '';
+        if (rawBody.toLowerCase().includes('cors')) {
+          msg = 'Cross-Origin (CORS) access denied. Please verify that the frontend origin is permitted by the backend.';
+        } else {
+          msg = rawBody || 'Access forbidden. Your account does not have permission to log in.';
+        }
+      } else if (responseData?.message) {
+        msg = responseData.message;
+      } else if (typeof responseData === 'string' && responseData.trim()) {
+        msg = responseData;
       } else if (err.code === 'ERR_NETWORK' || !err.response) {
         msg = 'Unable to connect to CRM backend at http://localhost:8085. Please ensure backend service is running.';
       }
@@ -53,7 +71,7 @@ export const LoginPage: React.FC = () => {
           {/* Brand Logo & Heading */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#097C87] to-[#23CED9] text-white shadow-lg shadow-brand-teal/30 mb-4">
-              <Sparkles className="w-7 h-7" />
+              <Building2 className="w-7 h-7" />
             </div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
               ACXIOM<span className="text-[#097C87]">CRM</span>
@@ -177,4 +195,3 @@ export const LoginPage: React.FC = () => {
     </div>
   );
 };
-

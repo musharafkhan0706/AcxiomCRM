@@ -82,7 +82,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.ok("User updated successfully", updated));
     }
 
-    @RequestMapping(value = "/{id}/role", method = {RequestMethod.PATCH, RequestMethod.PUT})
+    @RequestMapping(value = "/{id}/role", method = { RequestMethod.PATCH, RequestMethod.PUT })
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Assign a role to a user (Admin only)")
     public ResponseEntity<ApiResponse<UserResponse>> updateUserRole(
@@ -93,7 +93,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.ok("User role updated successfully", updated));
     }
 
-    @RequestMapping(value = {"/{id}/toggle-active", "/{id}/status"}, method = {RequestMethod.PATCH, RequestMethod.POST})
+    @RequestMapping(value = {"/{id}/toggle-active", "/{id}/status"}, method = {RequestMethod.PATCH, RequestMethod.POST, RequestMethod.PUT})
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Activate or deactivate a user account (Admin only)")
     public ResponseEntity<ApiResponse<UserResponse>> toggleUserActive(
@@ -106,7 +106,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.ok("User status updated", updated));
     }
 
-    @RequestMapping(value = "/{id}/unlock", method = {RequestMethod.PATCH, RequestMethod.POST})
+    @RequestMapping(value = "/{id}/unlock", method = {RequestMethod.PATCH, RequestMethod.POST, RequestMethod.PUT})
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Manually unlock a locked user account (Admin only)")
     public ResponseEntity<ApiResponse<UserResponse>> unlockUser(

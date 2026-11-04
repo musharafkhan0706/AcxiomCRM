@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Plus,
   Search,
-  Shield,
+  Users,
   KeyRound,
   Lock,
   Unlock,
@@ -141,7 +141,7 @@ export const UserListPage: React.FC = () => {
           <EmptyState
             title="No users found"
             description="Adjust your search query or provision a new user."
-            icon={Shield}
+            icon={Users}
           />
         ) : (
           <Table>

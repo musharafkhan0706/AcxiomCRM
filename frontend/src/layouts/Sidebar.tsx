@@ -8,11 +8,10 @@ import {
   CalendarCheck,
   Activity as ActivityIcon,
   BarChart3,
-  ShieldAlert,
+  ShieldCheck,
   Users,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useAuth } from '../hooks/useAuth';
@@ -35,7 +34,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => 
     { name: 'Follow-Ups', path: '/followups', icon: CalendarCheck },
     { name: 'Activities', path: '/activities', icon: ActivityIcon },
     { name: 'Reports', path: '/reports', icon: BarChart3 },
-    ...(isManagerOrAdmin ? [{ name: 'Audit Logs', path: '/audit', icon: ShieldAlert }] : []),
+    ...(isManagerOrAdmin ? [{ name: 'Audit Logs', path: '/audit', icon: ShieldCheck }] : []),
     ...(isAdmin ? [{ name: 'User Management', path: '/users', icon: Users }] : []),
   ];
 
@@ -50,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => 
       <div className="h-16 flex items-center justify-between px-4 border-b border-white/10">
         <div className="flex items-center gap-3 overflow-hidden">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#23CED9] to-white/90 flex items-center justify-center shadow-md flex-shrink-0">
-            <Sparkles className="w-5 h-5 text-[#097C87]" />
+            <Building2 className="w-5 h-5 text-[#097C87]" />
           </div>
           {!collapsed && (
             <div className="truncate">
@@ -115,4 +114,3 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => 
     </aside>
   );
 };
-

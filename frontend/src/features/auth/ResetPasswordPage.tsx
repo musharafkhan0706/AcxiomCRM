@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import api from '../../api/client';
-import { Sparkles, Lock, Eye, EyeOff, CheckCircle2, ShieldAlert, ArrowLeft, Check, X } from 'lucide-react';
+import { Building2, Lock, Eye, EyeOff, CheckCircle2, ShieldAlert, ArrowLeft, Check, X } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 
@@ -70,7 +70,7 @@ export const ResetPasswordPage: React.FC = () => {
           {/* Brand Logo & Heading */}
           <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#097C87] to-[#23CED9] text-white shadow-lg shadow-[#097C87]/30 mb-4">
-              <Sparkles className="w-7 h-7" />
+              <Building2 className="w-7 h-7" />
             </div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
               Create New <span className="text-[#097C87]">Password</span>

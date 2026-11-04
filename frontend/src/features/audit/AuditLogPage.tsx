@@ -5,7 +5,7 @@ import {
   Filter,
   Eye,
   History,
-  Shield,
+  ShieldCheck,
   ChevronLeft,
   ChevronRight,
   User,

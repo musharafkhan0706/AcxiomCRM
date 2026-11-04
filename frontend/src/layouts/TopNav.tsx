@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Bell,
   Search,
-  User as UserIcon,
+  UserRound,
   LogOut,
   KeyRound,
   ChevronDown,
@@ -162,7 +162,7 @@ export const TopNav: React.FC = () => {
             className="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-slate-100 transition-colors focus:outline-none"
           >
             <div className="w-8 h-8 rounded-xl bg-brand-teal text-white flex items-center justify-center font-bold text-xs shadow-xs">
-              {user?.name ? user.name.charAt(0).toUpperCase() : <UserIcon className="w-4 h-4" />}
+              {user?.name ? user.name.charAt(0).toUpperCase() : <UserRound className="w-4 h-4" />}
             </div>
             <div className="text-left hidden lg:block">
               <p className="text-xs font-bold text-slate-800 leading-tight">{user?.name}</p>

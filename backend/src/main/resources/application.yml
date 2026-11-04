@@ -26,7 +26,7 @@ acxiom:
     max-failed-attempts: ${LOCKOUT_MAX_ATTEMPTS:5}
     lockout-duration-minutes: ${LOCKOUT_DURATION_MINUTES:15}
     cors:
-      allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173}
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:5175}
   seed:
     admin-email: ${SEED_ADMIN_EMAIL:admin@acxiomcrm.com}
     admin-password: ${SEED_ADMIN_PASSWORD:Admin@Acxiom2026!}
@@ -45,4 +45,3 @@ springdoc:
     path: /swagger-ui.html
     operationsSorter: method
     tagsSorter: alpha
-
