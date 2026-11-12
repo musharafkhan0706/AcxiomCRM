@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Plus,
@@ -8,17 +9,16 @@ import {
   Edit2,
   Trash2,
   Building,
+  Building2,
   Mail,
   Phone,
   ChevronLeft,
   ChevronRight,
-  Users,
+  X,
 } from 'lucide-react';
 import api from '../../api/client';
 import { Customer, PagedResponse, ApiResponse } from '../../types';
 import { Button } from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import Select from '../../components/ui/Select';
 import { StatusBadge } from '../../components/ui/Badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui/Table';
 import Skeleton from '../../components/ui/Skeleton';
@@ -33,11 +33,29 @@ export const CustomerListPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { success, error: toastError } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const initialSearch = searchParams.get('query') || searchParams.get('search') || '';
+  const initialStatus = searchParams.get('status') || '';
+
+  const [search, setSearch] = useState(initialSearch);
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [page, setPage] = useState(0);
   const size = 10;
+
+  // Sync state if URL search params change (e.g. from top nav global search)
+  useEffect(() => {
+    const urlQuery = searchParams.get('query') || searchParams.get('search') || '';
+    const urlStatus = searchParams.get('status') || '';
+    if (urlQuery !== search) {
+      setSearch(urlQuery);
+      setPage(0);
+    }
+    if (urlStatus !== statusFilter) {
+      setStatusFilter(urlStatus);
+      setPage(0);
+    }
+  }, [searchParams]);
 
   const [formModalOpen, setFormModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -52,8 +70,14 @@ export const CustomerListPage: React.FC = () => {
     queryKey: ['customers', search, statusFilter, page],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (search) params.append('search', search);
-      if (statusFilter) params.append('status', statusFilter);
+      const trimmedSearch = search.trim();
+      if (trimmedSearch) {
+        params.append('query', trimmedSearch);
+        params.append('search', trimmedSearch);
+      }
+      if (statusFilter) {
+        params.append('status', statusFilter);
+      }
       params.append('page', String(page));
       params.append('size', String(size));
       params.append('sortBy', 'createdAt');
@@ -100,6 +124,13 @@ export const CustomerListPage: React.FC = () => {
     setDeleteModalOpen(true);
   };
 
+  const handleClearFilters = () => {
+    setSearch('');
+    setStatusFilter('');
+    setPage(0);
+    setSearchParams({});
+  };
+
   return (
     <div className="space-y-6">
       {/* Header and Actions */}
@@ -117,7 +148,7 @@ export const CustomerListPage: React.FC = () => {
 
       {/* Filter and Search Bar */}
       <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card flex flex-col md:flex-row gap-3 items-center justify-between">
-        <div className="relative w-full md:w-80">
+        <div className="relative w-full md:w-96">
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
           <input
             type="text"
@@ -126,25 +157,44 @@ export const CustomerListPage: React.FC = () => {
               setSearch(e.target.value);
               setPage(0);
             }}
-            placeholder="Search by name, email, code..."
-            className="w-full pl-9 pr-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-deep-teal/20 focus:border-brand-deep-teal"
+            placeholder="Search by name, company, email, phone, code..."
+            className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-deep-teal/20 focus:border-brand-deep-teal"
           />
+          {search && (
+            <button
+              onClick={() => {
+                setSearch('');
+                setPage(0);
+              }}
+              className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600 transition-colors"
+              title="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <Filter className="w-4 h-4 text-gray-400 hidden md:block" />
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPage(0);
-            }}
-            className="text-xs border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-deep-teal/20 focus:border-brand-deep-teal w-full md:w-44"
-          >
-            <option value="">All Statuses</option>
-            <option value="ACTIVE">Active Accounts</option>
-            <option value="INACTIVE">Inactive Accounts</option>
-          </select>
+        <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-gray-400 hidden sm:block" />
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(0);
+              }}
+              className="text-xs border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-deep-teal/20 focus:border-brand-deep-teal w-full sm:w-44"
+            >
+              <option value="">All Statuses</option>
+              <option value="ACTIVE">Active Accounts</option>
+              <option value="INACTIVE">Inactive Accounts</option>
+            </select>
+          </div>
+
+          {/* Record Count Badge */}
+          <div className="text-xs text-gray-500 font-medium whitespace-nowrap px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
+            Total Customers: <span className="font-bold text-gray-800">{data?.totalElements ?? 0}</span>
+          </div>
         </div>
       </div>
 
@@ -158,13 +208,23 @@ export const CustomerListPage: React.FC = () => {
           </div>
         ) : !data || data.content.length === 0 ? (
           <EmptyState
-            title="No customer accounts found"
-            description="Get started by registering your first enterprise customer or adjusting your search filters."
-            icon={Users}
+            title="No customers found"
+            description={
+              search.trim() || statusFilter
+                ? 'No customer records match your current search and filter criteria. Try adjusting your query or clearing filters.'
+                : 'Get started by registering your first enterprise customer.'
+            }
+            icon={Building2}
             action={
-              <Button onClick={handleOpenCreate} size="sm">
-                <Plus className="w-4 h-4 mr-1" /> Add Customer
-              </Button>
+              search.trim() || statusFilter ? (
+                <Button variant="outline" size="sm" onClick={handleClearFilters}>
+                  Clear Filters
+                </Button>
+              ) : (
+                <Button onClick={handleOpenCreate} size="sm">
+                  <Plus className="w-4 h-4 mr-1" /> Add Customer
+                </Button>
+              )
             }
           />
         ) : (
@@ -247,8 +307,9 @@ export const CustomerListPage: React.FC = () => {
             {/* Pagination footer */}
             <div className="flex items-center justify-between px-6 py-3 border-t border-gray-100 text-xs text-gray-500 bg-gray-50/50">
               <p>
-                Showing {data.page * data.size + 1} to {Math.min((data.page + 1) * data.size, data.totalElements)} of{' '}
-                {data.totalElements} records
+                {data.totalElements === 0
+                  ? 'Showing 0 records'
+                  : `Showing ${data.page * data.size + 1} to ${Math.min((data.page + 1) * data.size, data.totalElements)} of ${data.totalElements} records`}
               </p>
               <div className="flex items-center gap-2">
                 <Button
@@ -321,4 +382,3 @@ export const CustomerListPage: React.FC = () => {
 };
 
 export default CustomerListPage;
-

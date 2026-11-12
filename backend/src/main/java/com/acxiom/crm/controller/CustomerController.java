@@ -30,10 +30,12 @@ public class CustomerController {
     @Operation(summary = "Search customers with filtering, sorting, and pagination")
     public ResponseEntity<ApiResponse<PagedResponse<CustomerResponse>>> getCustomers(
             @RequestParam(required = false) String query,
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) CustomerStatus status,
             @CurrentUser UserPrincipal currentUser,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        PagedResponse<CustomerResponse> customers = customerService.searchCustomers(query, status, currentUser, pageable);
+        String searchTerm = (query != null && !query.isBlank()) ? query : search;
+        PagedResponse<CustomerResponse> customers = customerService.searchCustomers(searchTerm, status, currentUser, pageable);
         return ResponseEntity.ok(ApiResponse.ok(customers));
     }
 

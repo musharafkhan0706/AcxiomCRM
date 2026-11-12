@@ -50,8 +50,12 @@ public class CustomerService {
     @Transactional(readOnly = true)
     public PagedResponse<CustomerResponse> searchCustomers(String query, CustomerStatus status,
                                                           UserPrincipal currentUser, Pageable pageable) {
+        String cleanQuery = (query != null) ? query.trim() : null;
+        if (cleanQuery != null && cleanQuery.isEmpty()) {
+            cleanQuery = null;
+        }
         Collection<Long> scopedUserIds = scopeHelper.getScopedUserIds(currentUser);
-        Page<Customer> page = customerRepository.searchCustomers(query, status, scopedUserIds, pageable);
+        Page<Customer> page = customerRepository.searchCustomers(cleanQuery, status, scopedUserIds, pageable);
         return PagedResponse.from(page.map(CustomerResponse::fromEntity));
     }
 
