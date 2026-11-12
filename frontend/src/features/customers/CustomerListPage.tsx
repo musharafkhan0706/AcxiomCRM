@@ -8,6 +8,7 @@ import {
   Eye,
   Edit2,
   Trash2,
+  RotateCcw,
   Building,
   Building2,
   Mail,
@@ -66,6 +67,9 @@ export const CustomerListPage: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
 
+  const [reactivateModalOpen, setReactivateModalOpen] = useState(false);
+  const [customerToReactivate, setCustomerToReactivate] = useState<Customer | null>(null);
+
   const { data, isLoading } = useQuery<PagedResponse<Customer>>({
     queryKey: ['customers', search, statusFilter, page],
     queryFn: async () => {
@@ -95,12 +99,28 @@ export const CustomerListPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
-      success('Customer record deleted successfully.');
+      success('Customer account deactivated successfully.');
       setDeleteModalOpen(false);
       setCustomerToDelete(null);
     },
     onError: (err: any) => {
-      toastError(err.response?.data?.message || 'Failed to delete customer record.');
+      toastError(err.response?.data?.message || 'Failed to deactivate customer record.');
+    },
+  });
+
+  const reactivateMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return api.patch(`/customers/${id}/reactivate`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      success('Customer account reactivated successfully.');
+      setReactivateModalOpen(false);
+      setCustomerToReactivate(null);
+    },
+    onError: (err: any) => {
+      toastError(err.response?.data?.message || 'Failed to reactivate customer record.');
     },
   });
 
@@ -122,6 +142,11 @@ export const CustomerListPage: React.FC = () => {
   const handleOpenDelete = (customer: Customer) => {
     setCustomerToDelete(customer);
     setDeleteModalOpen(true);
+  };
+
+  const handleOpenReactivate = (customer: Customer) => {
+    setCustomerToReactivate(customer);
+    setReactivateModalOpen(true);
   };
 
   const handleClearFilters = () => {
@@ -206,7 +231,7 @@ export const CustomerListPage: React.FC = () => {
               <Skeleton key={i} className="h-12 w-full rounded" />
             ))}
           </div>
-        ) : !data || data.content.length === 0 ? (
+        ) : !data || !Array.isArray(data.content) || data.content.length === 0 ? (
           <EmptyState
             title="No customers found"
             description={
@@ -241,7 +266,7 @@ export const CustomerListPage: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.content.map((c) => (
+                {(data?.content || []).map((c) => (
                   <TableRow key={c.id}>
                     <TableCell className="font-mono text-xs font-semibold text-brand-deep-teal">
                       {c.customerCode}
@@ -289,13 +314,23 @@ export const CustomerListPage: React.FC = () => {
                           <Edit2 className="w-4 h-4" />
                         </button>
                         {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
-                          <button
-                            onClick={() => handleOpenDelete(c)}
-                            className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-md transition-colors"
-                            title="Delete Customer"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          c.status === 'ACTIVE' ? (
+                            <button
+                              onClick={() => handleOpenDelete(c)}
+                              className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-md transition-colors"
+                              title="Deactivate Customer"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleOpenReactivate(c)}
+                              className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                              title="Reactivate Customer"
+                            >
+                              <RotateCcw className="w-4 h-4" />
+                            </button>
+                          )
                         )}
                       </div>
                     </TableCell>
@@ -350,18 +385,21 @@ export const CustomerListPage: React.FC = () => {
         customerId={viewCustomerId}
       />
 
-      {/* Delete Confirmation Modal */}
+      {/* Deactivate Confirmation Modal */}
       <Modal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        title="Confirm Customer Deletion"
+        title="Confirm Customer Deactivation"
         size="sm"
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Are you sure you want to delete customer{' '}
+            Are you sure you want to deactivate customer{' '}
             <span className="font-bold text-gray-900">{customerToDelete?.customerName}</span> (
-            {customerToDelete?.customerCode})? This action cannot be undone.
+            {customerToDelete?.customerCode})?
+          </p>
+          <p className="text-xs text-gray-500 bg-amber-50 p-2.5 rounded-lg border border-amber-200">
+            This customer account will be archived as <strong>INACTIVE</strong>. Historical deals, leads, activities, and audit trails remain fully preserved. The account can be reactivated at any time by an authorized administrator or manager.
           </p>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
@@ -372,7 +410,38 @@ export const CustomerListPage: React.FC = () => {
               isLoading={deleteMutation.isPending}
               onClick={() => customerToDelete && deleteMutation.mutate(customerToDelete.id)}
             >
-              Confirm Delete
+              Deactivate Account
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Reactivate Confirmation Modal */}
+      <Modal
+        isOpen={reactivateModalOpen}
+        onClose={() => setReactivateModalOpen(false)}
+        title="Confirm Customer Reactivation"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Are you sure you want to reactivate customer{' '}
+            <span className="font-bold text-gray-900">{customerToReactivate?.customerName}</span> (
+            {customerToReactivate?.customerCode})?
+          </p>
+          <p className="text-xs text-teal-800 bg-teal-50 p-2.5 rounded-lg border border-teal-200">
+            The account status will be restored to <strong>ACTIVE</strong>. Team members will be able to log new opportunities, leads, and sales activities against this client.
+          </p>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setReactivateModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              isLoading={reactivateMutation.isPending}
+              onClick={() => customerToReactivate && reactivateMutation.mutate(customerToReactivate.id)}
+            >
+              Reactivate Account
             </Button>
           </div>
         </div>

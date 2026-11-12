@@ -190,12 +190,27 @@ public class CustomerService {
     @Transactional
     public void deleteCustomer(Long id, UserPrincipal currentUser) {
         Customer customer = findAndAuthorizeCustomer(id, currentUser);
+        CustomerStatus oldStatus = customer.getStatus();
         customer.setStatus(CustomerStatus.INACTIVE);
         customerRepository.save(customer);
 
         auditService.logEvent(currentUser.getId(), currentUser.getEmail(), "CUSTOMER_DEACTIVATE", "CUSTOMER",
-                customer.getId().toString(), "ACTIVE", "INACTIVE", "SUCCESS",
+                customer.getId().toString(), oldStatus != null ? oldStatus.name() : "ACTIVE", "INACTIVE", "SUCCESS",
                 "Customer deactivated: " + customer.getCustomerCode(), null);
+    }
+
+    @Transactional
+    public CustomerResponse reactivateCustomer(Long id, UserPrincipal currentUser) {
+        Customer customer = findAndAuthorizeCustomer(id, currentUser);
+        CustomerStatus oldStatus = customer.getStatus();
+        customer.setStatus(CustomerStatus.ACTIVE);
+        Customer updated = customerRepository.save(customer);
+
+        auditService.logEvent(currentUser.getId(), currentUser.getEmail(), "CUSTOMER_REACTIVATE", "CUSTOMER",
+                updated.getId().toString(), oldStatus != null ? oldStatus.name() : "INACTIVE", "ACTIVE", "SUCCESS",
+                "Customer reactivated: " + updated.getCustomerCode(), null);
+
+        return CustomerResponse.fromEntity(updated);
     }
 
     private Customer findAndAuthorizeCustomer(Long id, UserPrincipal currentUser) {

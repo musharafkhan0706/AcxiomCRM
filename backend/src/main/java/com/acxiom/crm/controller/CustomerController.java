@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -77,12 +78,40 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Deactivate/archive a Customer")
     public ResponseEntity<ApiResponse<String>> deleteCustomer(
             @PathVariable Long id,
             @CurrentUser UserPrincipal currentUser) {
         customerService.deleteCustomer(id, currentUser);
         return ResponseEntity.ok(ApiResponse.ok("Customer deactivated successfully", "Customer status updated to INACTIVE"));
+    }
+
+    @RequestMapping(value = "/{id}/reactivate", method = {RequestMethod.PATCH, RequestMethod.POST, RequestMethod.PUT})
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Reactivate an inactive Customer")
+    public ResponseEntity<ApiResponse<CustomerResponse>> reactivateCustomer(
+            @PathVariable Long id,
+            @CurrentUser UserPrincipal currentUser) {
+        CustomerResponse reactivated = customerService.reactivateCustomer(id, currentUser);
+        return ResponseEntity.ok(ApiResponse.ok("Customer reactivated successfully", reactivated));
+    }
+
+    @RequestMapping(value = "/{id}/status", method = {RequestMethod.PATCH, RequestMethod.PUT})
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Set Customer status (ACTIVE / INACTIVE)")
+    public ResponseEntity<ApiResponse<CustomerResponse>> updateCustomerStatus(
+            @PathVariable Long id,
+            @RequestParam CustomerStatus status,
+            @CurrentUser UserPrincipal currentUser) {
+        CustomerResponse updated;
+        if (status == CustomerStatus.ACTIVE) {
+            updated = customerService.reactivateCustomer(id, currentUser);
+        } else {
+            customerService.deleteCustomer(id, currentUser);
+            updated = customerService.getCustomerById(id, currentUser);
+        }
+        return ResponseEntity.ok(ApiResponse.ok("Customer status updated successfully", updated));
     }
 }
 
