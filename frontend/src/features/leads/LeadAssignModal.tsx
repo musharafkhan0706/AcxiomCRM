@@ -6,6 +6,7 @@ import Modal from '../../components/ui/Modal';
 import Select from '../../components/ui/Select';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../components/ui/Toast';
+import { normalizeUsersList } from '../../utils/normalize';
 
 interface LeadAssignModalProps {
   isOpen: boolean;
@@ -18,14 +19,16 @@ export const LeadAssignModal: React.FC<LeadAssignModalProps> = ({ isOpen, onClos
   const { success, error: toastError } = useToast();
   const [selectedUserId, setSelectedUserId] = useState<string>('');
 
-  const { data: users } = useQuery<User[]>({
+  const { data: rawUsers, isLoading: isLoadingUsers } = useQuery({
     queryKey: ['users-assignable'],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<User[]>>('/users');
-      return res.data.data;
+      const res = await api.get<ApiResponse<any>>('/users/assignable');
+      return normalizeUsersList(res.data?.data);
     },
     enabled: isOpen,
   });
+
+  const users = normalizeUsersList(rawUsers);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -64,11 +67,12 @@ export const LeadAssignModal: React.FC<LeadAssignModalProps> = ({ isOpen, onClos
           label="Select New Owner *"
           value={selectedUserId}
           onChange={(e) => setSelectedUserId(e.target.value)}
+          disabled={isLoadingUsers}
           options={[
             { value: '', label: '-- Select Representative --' },
-            ...(users || []).map((u) => ({
+            ...users.map((u) => ({
               value: String(u.id),
-              label: `${u.name} (${u.role.replace('_', ' ')})`,
+              label: `${u.name} (${(u.role || '').replace('_', ' ')})`,
             })),
           ]}
         />

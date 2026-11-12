@@ -10,6 +10,7 @@ import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../components/ui/Toast';
+import { normalizeUsersList } from '../../utils/normalize';
 
 const todayString = new Date().toISOString().split('T')[0];
 
@@ -22,7 +23,10 @@ const opportunitySchema = z.object({
   expectedCloseDate: z.string().min(1, 'Target close date is required.').refine((date) => date >= todayString, {
     message: 'Expected close date must be today or in the future.',
   }),
-  assignedToUserId: z.coerce.number().optional(),
+  assignedToUserId: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined || Number.isNaN(Number(val)) || Number(val) <= 0 ? undefined : Number(val)),
+    z.number().optional()
+  ),
   notes: z.string().optional(),
 });
 
@@ -86,14 +90,16 @@ export const OpportunityFormModal: React.FC<OpportunityFormModalProps> = ({ isOp
     enabled: isOpen,
   });
 
-  const { data: users } = useQuery<User[]>({
+  const { data: rawUsers, isLoading: isLoadingUsers } = useQuery({
     queryKey: ['users-assignable'],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<User[]>>('/users');
-      return res.data.data;
+      const res = await api.get<ApiResponse<any>>('/users/assignable');
+      return normalizeUsersList(res.data?.data);
     },
     enabled: isOpen,
   });
+
+  const users = normalizeUsersList(rawUsers);
 
   useEffect(() => {
     if (opportunity) {
@@ -104,7 +110,7 @@ export const OpportunityFormModal: React.FC<OpportunityFormModalProps> = ({ isOp
         stage: opportunity.stage,
         probability: opportunity.probability,
         expectedCloseDate: opportunity.expectedCloseDate,
-        assignedToUserId: opportunity.assignedToUserId,
+        assignedToUserId: opportunity.assignedToUserId ? Number(opportunity.assignedToUserId) : undefined,
         notes: opportunity.notes || '',
       });
     } else {
@@ -214,18 +220,35 @@ export const OpportunityFormModal: React.FC<OpportunityFormModalProps> = ({ isOp
           />
         </div>
 
-        <Select
-          label="Deal Owner (Assigned Representative)"
-          {...register('assignedToUserId')}
-          error={errors.assignedToUserId?.message}
-          options={[
+        {(() => {
+          const currentAssignedId = opportunity?.assignedToUserId ? Number(opportunity.assignedToUserId) : undefined;
+          const assignedExists = currentAssignedId ? users.some((u) => u.id === currentAssignedId) : false;
+          const userOptions = [
             { value: '', label: 'Unassigned' },
-            ...(users || []).map((u) => ({
+            ...(!assignedExists && currentAssignedId
+              ? [{
+                  value: String(currentAssignedId),
+                  label: opportunity?.assignedToUserName
+                    ? `${opportunity.assignedToUserName} (Currently Assigned)`
+                    : `User #${currentAssignedId} (Assigned)`,
+                }]
+              : []),
+            ...users.map((u) => ({
               value: String(u.id),
-              label: `${u.name} (${u.role.replace('_', ' ')})`,
+              label: `${u.name} (${(u.role || '').replace('_', ' ')})`,
             })),
-          ]}
-        />
+          ];
+
+          return (
+            <Select
+              label="Deal Owner (Assigned Representative)"
+              {...register('assignedToUserId')}
+              error={errors.assignedToUserId?.message}
+              options={userOptions}
+              disabled={isLoadingUsers}
+            />
+          );
+        })()}
 
         <div>
           <label className="block text-xs font-semibold text-gray-700 mb-1">Deal Strategy & Notes</label>

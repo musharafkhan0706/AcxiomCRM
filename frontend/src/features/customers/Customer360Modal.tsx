@@ -76,11 +76,11 @@ export const Customer360Modal: React.FC<Customer360ModalProps> = ({ isOpen, onCl
           <div className="flex border-b border-gray-200 overflow-x-auto gap-2">
             {[
               { id: 'overview', label: 'Overview', icon: Building },
-              { id: 'opportunities', label: `Deals (${data.opportunities.length})`, icon: Briefcase },
-              { id: 'leads', label: `Leads (${data.leads.length})`, icon: Target },
-              { id: 'followups', label: `Follow-Ups (${data.followUps.length})`, icon: Calendar },
-              { id: 'activities', label: `Activities (${data.activities.length})`, icon: ActivityIcon },
-              { id: 'audit', label: `Audit Trail (${data.history.length})`, icon: History },
+              { id: 'opportunities', label: `Deals (${(data.opportunities || []).length})`, icon: Briefcase },
+              { id: 'leads', label: `Leads (${(data.leads || []).length})`, icon: Target },
+              { id: 'followups', label: `Follow-Ups (${(data.followUps || []).length})`, icon: Calendar },
+              { id: 'activities', label: `Activities (${(data.activities || []).length})`, icon: ActivityIcon },
+              { id: 'audit', label: `Audit Trail (${(data.history || []).length})`, icon: History },
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -182,11 +182,11 @@ export const Customer360Modal: React.FC<Customer360ModalProps> = ({ isOpen, onCl
           {/* Tab 2: Opportunities */}
           {activeTab === 'opportunities' && (
             <div className="space-y-3">
-              {data.opportunities.length === 0 ? (
+              {(!data.opportunities || data.opportunities.length === 0) ? (
                 <p className="text-xs text-center text-gray-400 py-6">No opportunities created for this customer.</p>
               ) : (
                 <div className="divide-y divide-gray-100 border rounded-lg overflow-hidden">
-                  {data.opportunities.map((opp) => (
+                  {(data.opportunities || []).map((opp) => (
                     <div key={opp.id} className="p-3 bg-white flex items-center justify-between text-sm">
                       <div>
                         <p className="font-semibold text-gray-900">{opp.opportunityName}</p>
@@ -208,11 +208,11 @@ export const Customer360Modal: React.FC<Customer360ModalProps> = ({ isOpen, onCl
           {/* Tab 3: Leads */}
           {activeTab === 'leads' && (
             <div className="space-y-3">
-              {data.leads.length === 0 ? (
+              {(!data.leads || data.leads.length === 0) ? (
                 <p className="text-xs text-center text-gray-400 py-6">No lead inquiries linked to this client.</p>
               ) : (
                 <div className="divide-y divide-gray-100 border rounded-lg overflow-hidden">
-                  {data.leads.map((l) => (
+                  {(data.leads || []).map((l) => (
                     <div key={l.id} className="p-3 bg-white flex items-center justify-between text-sm">
                       <div>
                         <p className="font-semibold text-gray-900">{l.leadName}</p>
@@ -231,11 +231,11 @@ export const Customer360Modal: React.FC<Customer360ModalProps> = ({ isOpen, onCl
           {/* Tab 4: Follow-Ups */}
           {activeTab === 'followups' && (
             <div className="space-y-3">
-              {data.followUps.length === 0 ? (
+              {(!data.followUps || data.followUps.length === 0) ? (
                 <p className="text-xs text-center text-gray-400 py-6">No follow-ups recorded.</p>
               ) : (
                 <div className="divide-y divide-gray-100 border rounded-lg overflow-hidden">
-                  {data.followUps.map((fu) => (
+                  {(data.followUps || []).map((fu) => (
                     <div key={fu.id} className="p-3 bg-white flex items-center justify-between text-sm">
                       <div>
                         <p className="font-semibold text-gray-900">{fu.subject}</p>
@@ -255,11 +255,11 @@ export const Customer360Modal: React.FC<Customer360ModalProps> = ({ isOpen, onCl
           {/* Tab 5: Activities */}
           {activeTab === 'activities' && (
             <div className="space-y-3">
-              {data.activities.length === 0 ? (
+              {(!data.activities || data.activities.length === 0) ? (
                 <p className="text-xs text-center text-gray-400 py-6">No client activities logged.</p>
               ) : (
                 <div className="divide-y divide-gray-100 border rounded-lg overflow-hidden">
-                  {data.activities.map((act) => (
+                  {(data.activities || []).map((act) => (
                     <div key={act.id} className="p-3 bg-white flex items-center justify-between text-sm">
                       <div>
                         <p className="font-semibold text-gray-900">{act.subject}</p>
@@ -279,11 +279,11 @@ export const Customer360Modal: React.FC<Customer360ModalProps> = ({ isOpen, onCl
           {/* Tab 6: Audit Trail */}
           {activeTab === 'audit' && (
             <div className="space-y-3 max-h-72 overflow-y-auto">
-              {data.history.length === 0 ? (
+              {(!data.history || data.history.length === 0) ? (
                 <p className="text-xs text-center text-gray-400 py-6">No audit records found.</p>
               ) : (
                 <div className="divide-y divide-gray-100 border rounded-lg overflow-hidden text-xs">
-                  {data.history.map((h) => (
+                  {(data.history || []).map((h) => (
                     <div key={h.id} className="p-3 bg-white flex items-center justify-between">
                       <div>
                         <p className="font-semibold text-gray-800">

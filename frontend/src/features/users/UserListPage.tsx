@@ -25,6 +25,7 @@ import UserFormModal from './UserFormModal';
 import ResetPasswordModal from './ResetPasswordModal';
 import { useToast } from '../../components/ui/Toast';
 import { formatDate } from '../../utils/cn';
+import { normalizeUsersList } from '../../utils/normalize';
 
 export const UserListPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -37,13 +38,15 @@ export const UserListPage: React.FC = () => {
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [userToReset, setUserToReset] = useState<User | null>(null);
 
-  const { data: users, isLoading } = useQuery<User[]>({
+  const { data: rawUsers, isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<User[]>>('/users');
-      return res.data.data;
+      const res = await api.get<ApiResponse<any>>('/users?size=100');
+      return normalizeUsersList(res.data?.data);
     },
   });
+
+  const users = normalizeUsersList(rawUsers);
 
   const statusMutation = useMutation({
     mutationFn: async ({ id, active }: { id: number; active: boolean }) => {

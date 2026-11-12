@@ -10,6 +10,7 @@ import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../components/ui/Toast';
+import { normalizeUsersList } from '../../utils/normalize';
 
 const customerSchema = z.object({
   customerName: z.string().min(1, 'Customer Name is required.'),
@@ -20,7 +21,10 @@ const customerSchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   status: z.enum(['ACTIVE', 'INACTIVE']).default('ACTIVE'),
-  assignedToUserId: z.coerce.number().optional(),
+  assignedToUserId: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined || Number.isNaN(Number(val)) || Number(val) <= 0 ? undefined : Number(val)),
+    z.number().optional()
+  ),
 });
 
 type CustomerFormValues = z.infer<typeof customerSchema>;
@@ -57,27 +61,29 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, on
   });
 
   // Fetch sales representatives for assignment dropdown
-  const { data: users } = useQuery<User[]>({
+  const { data: rawUsers, isLoading: isLoadingUsers } = useQuery({
     queryKey: ['users-assignable'],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<User[]>>('/users');
-      return res.data.data;
+      const res = await api.get<ApiResponse<any>>('/users/assignable');
+      return normalizeUsersList(res.data?.data);
     },
     enabled: isOpen,
   });
 
+  const users = normalizeUsersList(rawUsers);
+
   useEffect(() => {
     if (customer) {
       reset({
-        customerName: customer.customerName,
-        email: customer.email,
-        phone: customer.phone,
+        customerName: customer.customerName || '',
+        email: customer.email || '',
+        phone: customer.phone || '',
         companyName: customer.companyName || '',
         address: customer.address || '',
         city: customer.city || '',
         state: customer.state || '',
-        status: customer.status,
-        assignedToUserId: customer.assignedToUserId,
+        status: customer.status || 'ACTIVE',
+        assignedToUserId: customer.assignedToUserId ? Number(customer.assignedToUserId) : undefined,
       });
     } else {
       reset({
@@ -178,18 +184,35 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, on
           />
         </div>
 
-        <Select
-          label="Assigned Account Executive"
-          {...register('assignedToUserId')}
-          error={errors.assignedToUserId?.message}
-          options={[
+        {(() => {
+          const currentAssignedId = customer?.assignedToUserId ? Number(customer.assignedToUserId) : undefined;
+          const assignedUserExistsInList = currentAssignedId ? users.some((u) => u.id === currentAssignedId) : false;
+          const userOptions = [
             { value: '', label: 'Unassigned (General Pool)' },
-            ...(users || []).map((u) => ({
+            ...(!assignedUserExistsInList && currentAssignedId
+              ? [{
+                  value: String(currentAssignedId),
+                  label: customer?.assignedToUserName
+                    ? `${customer.assignedToUserName} (Currently Assigned)`
+                    : `User #${currentAssignedId} (Assigned)`,
+                }]
+              : []),
+            ...users.map((u) => ({
               value: String(u.id),
-              label: `${u.name} (${u.role.replace('_', ' ')})`,
+              label: `${u.name} (${(u.role || '').replace('_', ' ')})`,
             })),
-          ]}
-        />
+          ];
+
+          return (
+            <Select
+              label="Assigned Account Executive"
+              {...register('assignedToUserId')}
+              error={errors.assignedToUserId?.message}
+              options={userOptions}
+              disabled={isLoadingUsers}
+            />
+          );
+        })()}
 
         <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>

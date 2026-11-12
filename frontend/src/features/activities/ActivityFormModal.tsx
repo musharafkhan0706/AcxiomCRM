@@ -10,6 +10,7 @@ import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../components/ui/Toast';
+import { normalizeUsersList } from '../../utils/normalize';
 
 const activitySchema = z.object({
   subject: z.string().min(1, 'Subject is required.'),
@@ -19,7 +20,10 @@ const activitySchema = z.object({
   customerId: z.coerce.number().optional(),
   leadId: z.coerce.number().optional(),
   opportunityId: z.coerce.number().optional(),
-  assignedToUserId: z.coerce.number().optional(),
+  assignedToUserId: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined || Number.isNaN(Number(val)) || Number(val) <= 0 ? undefined : Number(val)),
+    z.number().optional()
+  ),
   description: z.string().optional(),
 });
 
@@ -67,14 +71,16 @@ export const ActivityFormModal: React.FC<ActivityFormModalProps> = ({ isOpen, on
     enabled: isOpen,
   });
 
-  const { data: users } = useQuery<User[]>({
+  const { data: rawUsers, isLoading: isLoadingUsers } = useQuery({
     queryKey: ['users-assignable'],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<User[]>>('/users');
-      return res.data.data;
+      const res = await api.get<ApiResponse<any>>('/users/assignable');
+      return normalizeUsersList(res.data?.data);
     },
     enabled: isOpen,
   });
+
+  const users = normalizeUsersList(rawUsers);
 
   useEffect(() => {
     if (activity) {
@@ -86,7 +92,7 @@ export const ActivityFormModal: React.FC<ActivityFormModalProps> = ({ isOpen, on
         customerId: activity.customerId,
         leadId: activity.leadId,
         opportunityId: activity.opportunityId,
-        assignedToUserId: activity.assignedToUserId,
+        assignedToUserId: activity.assignedToUserId ? Number(activity.assignedToUserId) : undefined,
         description: activity.description || '',
       });
     } else {
@@ -193,18 +199,35 @@ export const ActivityFormModal: React.FC<ActivityFormModalProps> = ({ isOpen, on
           />
         </div>
 
-        <Select
-          label="Logged Representative"
-          {...register('assignedToUserId')}
-          error={errors.assignedToUserId?.message}
-          options={[
-            { value: '', label: 'Myself' },
-            ...(users || []).map((u) => ({
+        {(() => {
+          const currentAssignedId = activity?.assignedToUserId ? Number(activity.assignedToUserId) : undefined;
+          const assignedExists = currentAssignedId ? users.some((u) => u.id === currentAssignedId) : false;
+          const userOptions = [
+            { value: '', label: 'Myself (Default)' },
+            ...(!assignedExists && currentAssignedId
+              ? [{
+                  value: String(currentAssignedId),
+                  label: activity?.assignedToUserName
+                    ? `${activity.assignedToUserName} (Currently Assigned)`
+                    : `User #${currentAssignedId} (Assigned)`,
+                }]
+              : []),
+            ...users.map((u) => ({
               value: String(u.id),
-              label: `${u.name} (${u.role.replace('_', ' ')})`,
+              label: `${u.name} (${(u.role || '').replace('_', ' ')})`,
             })),
-          ]}
-        />
+          ];
+
+          return (
+            <Select
+              label="Logged Representative"
+              {...register('assignedToUserId')}
+              error={errors.assignedToUserId?.message}
+              options={userOptions}
+              disabled={isLoadingUsers}
+            />
+          );
+        })()}
 
         <div>
           <label className="block text-xs font-semibold text-gray-700 mb-1">Details & Description</label>
