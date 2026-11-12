@@ -31,6 +31,12 @@ tools/
 # Environment files with sensitive credentials
 .env
 
+# H2 persistent database files
+data/
+backend/data/
+*.mv.db
+*.trace.db
+
 # Scratch and temporary testing scripts
 scratch/
 
