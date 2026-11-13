@@ -118,22 +118,32 @@ export const OpportunityListPage: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           {/* View Mode Toggle */}
-          <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1">
+          <div className="inline-flex items-center rounded-lg border border-gray-200 bg-gray-100/80 p-0.5 shadow-xs">
             <button
+              type="button"
               onClick={() => setViewMode('kanban')}
-              className={`p-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                viewMode === 'kanban' ? 'bg-brand-deep-teal text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              aria-pressed={viewMode === 'kanban'}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all min-w-[76px] select-none ${
+                viewMode === 'kanban'
+                  ? 'bg-brand-teal text-white shadow-sm hover:bg-brand-teal-600'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/60'
               }`}
             >
-              <LayoutGrid className="w-3.5 h-3.5" /> Kanban
+              <LayoutGrid className={`w-3.5 h-3.5 ${viewMode === 'kanban' ? 'text-white' : 'text-gray-500'}`} />
+              <span>Kanban</span>
             </button>
             <button
+              type="button"
               onClick={() => setViewMode('list')}
-              className={`p-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                viewMode === 'list' ? 'bg-brand-deep-teal text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              aria-pressed={viewMode === 'list'}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all min-w-[76px] select-none ${
+                viewMode === 'list'
+                  ? 'bg-brand-teal text-white shadow-sm hover:bg-brand-teal-600'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/60'
               }`}
             >
-              <List className="w-3.5 h-3.5" /> List
+              <List className={`w-3.5 h-3.5 ${viewMode === 'list' ? 'text-white' : 'text-gray-500'}`} />
+              <span>List</span>
             </button>
           </div>
 
@@ -228,6 +238,12 @@ export const OpportunityListPage: React.FC = () => {
         <div className="p-8 space-y-4">
           <Skeleton className="h-64 w-full rounded-xl" />
         </div>
+      ) : viewMode === 'kanban' ? (
+        <OpportunityKanbanBoard
+          opportunities={data?.content || []}
+          onEdit={handleOpenEdit}
+          onDelete={handleOpenDelete}
+        />
       ) : !data || data.content.length === 0 ? (
         <EmptyState
           title="No sales opportunities in view"
@@ -238,12 +254,6 @@ export const OpportunityListPage: React.FC = () => {
               <Plus className="w-4 h-4 mr-1" /> Add Opportunity
             </Button>
           }
-        />
-      ) : viewMode === 'kanban' ? (
-        <OpportunityKanbanBoard
-          opportunities={data.content}
-          onEdit={handleOpenEdit}
-          onDelete={handleOpenDelete}
         />
       ) : (
         <div className="bg-white rounded-xl border border-gray-100 shadow-card overflow-hidden">

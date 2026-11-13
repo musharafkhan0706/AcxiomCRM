@@ -25,11 +25,11 @@ interface OpportunityKanbanBoardProps {
 }
 
 const STAGES: { id: OpportunityStage; label: string; color: string; border: string }[] = [
-  { id: 'QUALIFICATION', label: '1. Qualification', color: 'bg-teal-50 text-teal-900', border: 'border-brand-deep-teal' },
-  { id: 'PROPOSAL', label: '2. Proposal', color: 'bg-cyan-50 text-cyan-900', border: 'border-brand-bright-cyan' },
-  { id: 'NEGOTIATION', label: '3. Negotiation', color: 'bg-amber-50 text-amber-900', border: 'border-brand-soft-yellow' },
-  { id: 'WON', label: '4. Closed Won', color: 'bg-emerald-50 text-emerald-900', border: 'border-brand-sage-green' },
-  { id: 'LOST', label: '5. Closed Lost', color: 'bg-rose-50 text-rose-900', border: 'border-brand-warm-peach' },
+  { id: 'QUALIFICATION', label: '1. Qualification', color: 'bg-teal-50 text-teal-900', border: 'border-brand-teal' },
+  { id: 'PROPOSAL', label: '2. Proposal', color: 'bg-cyan-50 text-cyan-900', border: 'border-brand-cyan' },
+  { id: 'NEGOTIATION', label: '3. Negotiation', color: 'bg-amber-50 text-amber-900', border: 'border-amber-400' },
+  { id: 'WON', label: '4. Closed Won', color: 'bg-emerald-50 text-emerald-900', border: 'border-emerald-500' },
+  { id: 'LOST', label: '5. Closed Lost', color: 'bg-rose-50 text-rose-900', border: 'border-rose-400' },
 ];
 
 export const OpportunityKanbanBoard: React.FC<OpportunityKanbanBoardProps> = ({
@@ -67,7 +67,7 @@ export const OpportunityKanbanBoard: React.FC<OpportunityKanbanBoardProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 overflow-x-auto pb-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-start overflow-x-auto pb-4">
       {STAGES.map((col, index) => {
         const columnOpps = opportunities.filter((o) => o.stage === col.id);
         const columnTotal = columnOpps.reduce((sum, o) => sum + Number(o.amount), 0);
@@ -78,26 +78,26 @@ export const OpportunityKanbanBoard: React.FC<OpportunityKanbanBoardProps> = ({
             className="flex flex-col bg-gray-50/70 border border-gray-200/70 rounded-xl min-w-[260px] max-h-[calc(100vh-280px)]"
           >
             {/* Column Header */}
-            <div className={`p-3.5 border-t-4 rounded-t-xl bg-white border-b border-gray-100 shadow-sm ${col.border}`}>
+            <div className={`p-3.5 border-t-4 rounded-t-xl bg-white border-b border-gray-100 shadow-xs ${col.border}`}>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-gray-800">{col.label}</span>
                 <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-700">
                   {columnOpps.length}
                 </span>
               </div>
-              <p className="text-xs font-semibold text-brand-deep-teal mt-1">
+              <p className="text-xs font-semibold text-brand-teal mt-1">
                 {formatCurrency(columnTotal)}
               </p>
             </div>
 
             {/* Opportunities List Container */}
-            <div className="flex-1 p-2 space-y-3 overflow-y-auto">
-              {columnOpps.length === 0 ? (
-                <div className="p-6 text-center text-xs text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
-                  No deals in this stage
-                </div>
-              ) : (
-                columnOpps.map((opp) => (
+            {columnOpps.length === 0 ? (
+              <div className="py-4 px-3 text-center">
+                <p className="text-xs text-gray-400 font-medium">No opportunities</p>
+              </div>
+            ) : (
+              <div className="flex-1 p-2 space-y-2.5 overflow-y-auto">
+                {columnOpps.map((opp) => (
                   <div
                     key={opp.id}
                     className="p-3.5 bg-white rounded-lg border border-gray-100 shadow-card hover:shadow-card-hover transition-all space-y-2.5 group"
@@ -172,7 +172,7 @@ export const OpportunityKanbanBoard: React.FC<OpportunityKanbanBoardProps> = ({
                         onChange={(e) =>
                           stageMutation.mutate({ id: opp.id, stage: e.target.value as OpportunityStage })
                         }
-                        className="text-[10px] font-semibold border-none bg-transparent text-gray-500 hover:text-brand-deep-teal cursor-pointer focus:outline-none"
+                        className="text-[10px] font-semibold border-none bg-transparent text-gray-500 hover:text-brand-teal cursor-pointer focus:outline-none"
                       >
                         {STAGES.map((s) => (
                           <option key={s.id} value={s.id}>
@@ -191,9 +191,9 @@ export const OpportunityKanbanBoard: React.FC<OpportunityKanbanBoardProps> = ({
                       </button>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         );
       })}

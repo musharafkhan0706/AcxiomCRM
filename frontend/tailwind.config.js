@@ -10,6 +10,11 @@ export default {
       colors: {
         // AcxiomCRM Exact Brand Palette
         brand: {
+          'deep-teal': '#097C87',
+          'bright-cyan': '#23CED9',
+          'warm-peach': '#FCA47C',
+          'soft-yellow': '#F9D779',
+          'sage-green': '#A1CCA6',
           teal: {
             DEFAULT: '#097C87',
             50: '#eff9fa',
