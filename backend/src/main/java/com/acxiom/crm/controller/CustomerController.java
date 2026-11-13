@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/customers")
 @Tag(name = "Customer Management", description = "Endpoints for Customer CRUD, Search, and 360-degree Profiles")
@@ -37,6 +39,14 @@ public class CustomerController {
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         String searchTerm = (query != null && !query.isBlank()) ? query : search;
         PagedResponse<CustomerResponse> customers = customerService.searchCustomers(searchTerm, status, currentUser, pageable);
+        return ResponseEntity.ok(ApiResponse.ok(customers));
+    }
+
+    @GetMapping("/all")
+    @Operation(summary = "Get all accessible active customers for dropdown selection")
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getAllCustomers(
+            @CurrentUser UserPrincipal currentUser) {
+        List<CustomerResponse> customers = customerService.getAllAccessibleCustomers(currentUser);
         return ResponseEntity.ok(ApiResponse.ok(customers));
     }
 

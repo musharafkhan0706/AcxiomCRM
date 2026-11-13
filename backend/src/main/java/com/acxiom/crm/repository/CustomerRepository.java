@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -20,6 +21,12 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     boolean existsByEmailIgnoreCaseAndIdNot(String email, Long id);
     boolean existsByPhone(String phone);
     boolean existsByPhoneAndIdNot(String phone, Long id);
+
+    @Query("SELECT c FROM Customer c WHERE " +
+           "(:scopedUserIds IS NULL OR c.assignedTo.id IN :scopedUserIds OR c.createdBy.id IN :scopedUserIds) AND " +
+           "c.status = :status ORDER BY c.customerName ASC")
+    List<Customer> findAccessibleCustomersByStatus(@Param("scopedUserIds") Collection<Long> scopedUserIds,
+                                                   @Param("status") CustomerStatus status);
 
     @Query("SELECT c FROM Customer c WHERE " +
            "(:scopedUserIds IS NULL OR c.assignedTo.id IN :scopedUserIds OR c.createdBy.id IN :scopedUserIds) AND " +

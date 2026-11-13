@@ -60,6 +60,15 @@ public class CustomerService {
     }
 
     @Transactional(readOnly = true)
+    public List<CustomerResponse> getAllAccessibleCustomers(UserPrincipal currentUser) {
+        Collection<Long> scopedUserIds = scopeHelper.getScopedUserIds(currentUser);
+        List<Customer> customers = customerRepository.findAccessibleCustomersByStatus(scopedUserIds, CustomerStatus.ACTIVE);
+        return customers.stream()
+                .map(CustomerResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public CustomerResponse getCustomerById(Long id, UserPrincipal currentUser) {
         Customer customer = findAndAuthorizeCustomer(id, currentUser);
         return CustomerResponse.fromEntity(customer);
