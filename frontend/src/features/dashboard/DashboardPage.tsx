@@ -210,7 +210,7 @@ export const DashboardPage: React.FC = () => {
         {/* Date Filter selector */}
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-gray-400" />
-          <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 text-xs">
+          <div className="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50 p-1 text-xs">
             {[
               { id: 'TODAY', label: 'Today' },
               { id: 'THIS_WEEK', label: 'Week' },
@@ -219,10 +219,12 @@ export const DashboardPage: React.FC = () => {
             ].map((tab) => (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => setPeriod(tab.id)}
-                className={`px-3 py-1 font-medium rounded-md transition-all ${
+                aria-pressed={period === tab.id}
+                className={`px-3 py-1 font-semibold rounded-md transition-all select-none ${
                   period === tab.id
-                    ? 'bg-brand-deep-teal text-white shadow-sm'
+                    ? 'bg-brand-teal bg-brand-deep-teal text-white shadow-sm hover:bg-brand-teal-600'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
