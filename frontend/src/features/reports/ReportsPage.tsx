@@ -2,25 +2,53 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart3,
-  Download,
-  Filter,
   Calendar,
   DollarSign,
   TrendingUp,
   Target,
   Users,
-  Briefcase,
-  CheckCircle2,
-  XCircle,
+  CalendarCheck,
   FileSpreadsheet,
 } from 'lucide-react';
 import api from '../../api/client';
-import { ApiResponse, PipelineSummary } from '../../types';
+import { ApiResponse } from '../../types';
 import Button from '../../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui/Table';
+import { StatusBadge } from '../../components/ui/Badge';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
-import { formatCurrency } from '../../utils/cn';
+import { formatCurrency, formatDate } from '../../utils/cn';
+
+const escapeCsvCell = (val: any): string => {
+  if (val === null || val === undefined) return '';
+  let str = String(val);
+
+  // Treat values beginning with =, +, -, or @ (including leading whitespace)
+  // as potentially executable spreadsheet formulas and prepend a tab character to force text rendering
+  if (/^\s*[=+\-@]/.test(str)) {
+    str = `\t${str}`;
+  }
+
+  if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+};
+
+const getFollowUpRelatedInfo = (fu: any) => {
+  if (fu.relatedType === 'CUSTOMER' || (!fu.relatedType && fu.customerName)) {
+    return { name: fu.customerName || '—', label: fu.customerName ? 'Customer' : '' };
+  }
+  if (fu.relatedType === 'LEAD' || (!fu.relatedType && fu.leadName)) {
+    return { name: fu.leadName || '—', label: fu.leadName ? 'Lead' : '' };
+  }
+  if (fu.relatedType === 'OPPORTUNITY' || (!fu.relatedType && fu.opportunityName)) {
+    return { name: fu.opportunityName || '—', label: fu.opportunityName ? 'Deal' : '' };
+  }
+  const fallback = fu.customerName || fu.leadName || fu.opportunityName;
+  return { name: fallback || '—', label: '' };
+};
 
 export const ReportsPage: React.FC = () => {
   const [activeReport, setActiveReport] = useState<'pipeline' | 'leads' | 'customers' | 'conversions' | 'followups'>(
@@ -71,6 +99,73 @@ export const ReportsPage: React.FC = () => {
       csvContent += `Converted Leads,${data.convertedLeads || 0}\n`;
       csvContent += `Conversion Rate,${data.conversionRate || 0}%\n`;
       csvContent += `Total Converted Opportunity Value,${data.convertedOpportunityValue || 0}\n`;
+    } else if (activeReport === 'customers') {
+      const headers = [
+        'Customer Code',
+        'Customer Name',
+        'Company Name',
+        'Email',
+        'Phone',
+        'Address',
+        'City',
+        'State',
+        'Status',
+        'Assigned To',
+        'Created By',
+        'Created Date',
+      ];
+      csvContent += headers.map(escapeCsvCell).join(',') + '\n';
+
+      const customers: any[] = Array.isArray(data.customers) ? data.customers : [];
+      customers.forEach((c) => {
+        const row = [
+          c.customerCode,
+          c.customerName,
+          c.companyName,
+          c.email,
+          c.phone,
+          c.address,
+          c.city,
+          c.state,
+          c.status,
+          c.assignedToUserName,
+          c.createdByUserName,
+          c.createdAt ? formatDate(c.createdAt) : '',
+        ];
+        csvContent += row.map(escapeCsvCell).join(',') + '\n';
+      });
+    } else if (activeReport === 'followups') {
+      const headers = [
+        'Subject',
+        'Related Type',
+        'Related To',
+        'Follow-Up Date',
+        'Follow-Up Type',
+        'Status',
+        'Assigned To',
+        'Created By',
+        'Notes',
+        'Created Date',
+      ];
+      csvContent += headers.map(escapeCsvCell).join(',') + '\n';
+
+      const followUps: any[] = Array.isArray(data.followUps) ? data.followUps : [];
+      followUps.forEach((fu) => {
+        const related = getFollowUpRelatedInfo(fu);
+        const row = [
+          fu.subject,
+          fu.relatedType,
+          related.name !== '—' ? related.name : '',
+          fu.followUpDate ? formatDate(fu.followUpDate) : '',
+          fu.followUpType,
+          fu.status,
+          fu.assignedToUserName,
+          fu.createdByUserName,
+          fu.notes,
+          fu.createdAt ? formatDate(fu.createdAt) : '',
+        ];
+        csvContent += row.map(escapeCsvCell).join(',') + '\n';
+      });
     } else {
       // General map serialization
       csvContent += 'Key,Value\n';
@@ -85,7 +180,7 @@ export const ReportsPage: React.FC = () => {
       });
     }
 
-    const encodedUri = encodeURI(csvContent);
+    const encodedUri = encodeURI(csvContent).replace(/#/g, '%23');
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
     link.setAttribute('download', filename);
@@ -313,6 +408,174 @@ export const ReportsPage: React.FC = () => {
               </CardContent>
             </Card>
           </div>
+        </div>
+      ) : activeReport === 'customers' ? (
+        <div className="space-y-6">
+          {/* Customer Acquisition Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card">
+              <p className="text-xs text-gray-500 font-medium">Total Customers</p>
+              <p className="text-xl font-bold text-gray-900 mt-1">{data.totalCustomers || 0}</p>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card">
+              <p className="text-xs text-gray-500 font-medium">Active Accounts</p>
+              <p className="text-xl font-bold text-emerald-600 mt-1">{data.activeCustomers || 0}</p>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card">
+              <p className="text-xs text-gray-500 font-medium">Inactive Accounts</p>
+              <p className="text-xl font-bold text-gray-500 mt-1">{data.inactiveCustomers || 0}</p>
+            </div>
+          </div>
+
+          {/* Customer Records Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-bold text-gray-900">
+                Customer Acquisition Records ({Array.isArray(data.customers) ? data.customers.length : 0})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {!data.customers || !Array.isArray(data.customers) || data.customers.length === 0 ? (
+                <EmptyState
+                  title="No customer records found"
+                  description="No customer accounts match the selected reporting range."
+                  icon={Users}
+                />
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="whitespace-nowrap">Customer Code</TableHead>
+                      <TableHead className="whitespace-nowrap">Customer Name</TableHead>
+                      <TableHead className="whitespace-nowrap">Company</TableHead>
+                      <TableHead className="whitespace-nowrap">Email</TableHead>
+                      <TableHead className="whitespace-nowrap">Phone</TableHead>
+                      <TableHead className="whitespace-nowrap">Status</TableHead>
+                      <TableHead className="whitespace-nowrap">Assigned To</TableHead>
+                      <TableHead className="whitespace-nowrap">Created Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.customers.map((c: any) => (
+                      <TableRow key={c.id}>
+                        <TableCell className="font-mono text-xs font-semibold text-brand-deep-teal">
+                          {c.customerCode || '—'}
+                        </TableCell>
+                        <TableCell className="font-medium text-gray-900 text-xs">
+                          {c.customerName || '—'}
+                        </TableCell>
+                        <TableCell className="text-xs text-gray-600">
+                          {c.companyName || '—'}
+                        </TableCell>
+                        <TableCell className="text-xs text-gray-600">
+                          {c.email || '—'}
+                        </TableCell>
+                        <TableCell className="text-xs text-gray-600">
+                          {c.phone || '—'}
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge status={c.status || 'ACTIVE'} />
+                        </TableCell>
+                        <TableCell className="text-xs text-gray-700">
+                          {c.assignedToUserName || <span className="text-gray-400 italic">Unassigned</span>}
+                        </TableCell>
+                        <TableCell className="text-xs text-gray-500 whitespace-nowrap">
+                          {formatDate(c.createdAt)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      ) : activeReport === 'followups' ? (
+        <div className="space-y-6">
+          {/* SLA & Engagement Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card">
+              <p className="text-xs text-gray-500 font-medium">Total Follow-Ups</p>
+              <p className="text-xl font-bold text-gray-900 mt-1">{data.totalFollowUps || 0}</p>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card">
+              <p className="text-xs text-gray-500 font-medium">Completed</p>
+              <p className="text-xl font-bold text-emerald-600 mt-1">{data.completed || 0}</p>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card">
+              <p className="text-xs text-gray-500 font-medium">Planned</p>
+              <p className="text-xl font-bold text-amber-600 mt-1">{data.planned || 0}</p>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card">
+              <p className="text-xs text-gray-500 font-medium">Missed / Overdue</p>
+              <p className="text-xl font-bold text-rose-600 mt-1">{data.missed || 0}</p>
+            </div>
+          </div>
+
+          {/* Follow-Up Records Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-bold text-gray-900">
+                Follow-Up & Engagement Records ({Array.isArray(data.followUps) ? data.followUps.length : 0})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {!data.followUps || !Array.isArray(data.followUps) || data.followUps.length === 0 ? (
+                <EmptyState
+                  title="No follow-up records found"
+                  description="No scheduled or logged follow-ups match the selected reporting range."
+                  icon={CalendarCheck}
+                />
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="whitespace-nowrap">Subject</TableHead>
+                      <TableHead className="whitespace-nowrap">Related To</TableHead>
+                      <TableHead className="whitespace-nowrap">Follow-Up Date</TableHead>
+                      <TableHead className="whitespace-nowrap">Type</TableHead>
+                      <TableHead className="whitespace-nowrap">Status</TableHead>
+                      <TableHead className="whitespace-nowrap">Assigned To</TableHead>
+                      <TableHead className="whitespace-nowrap">Notes</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.followUps.map((fu: any) => {
+                      const related = getFollowUpRelatedInfo(fu);
+                      return (
+                        <TableRow key={fu.id}>
+                          <TableCell className="font-medium text-gray-900 text-xs">
+                            {fu.subject || '—'}
+                          </TableCell>
+                          <TableCell className="text-xs text-gray-700">
+                            <span className="font-medium text-gray-900">{related.name}</span>
+                            {related.label && (
+                              <span className="text-gray-400 text-[11px] ml-1">({related.label})</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-xs text-gray-900 whitespace-nowrap">
+                            {formatDate(fu.followUpDate)}
+                          </TableCell>
+                          <TableCell className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            {fu.followUpType || '—'}
+                          </TableCell>
+                          <TableCell>
+                            <StatusBadge status={fu.status || 'PLANNED'} />
+                          </TableCell>
+                          <TableCell className="text-xs text-gray-700">
+                            {fu.assignedToUserName || <span className="text-gray-400 italic">Unassigned</span>}
+                          </TableCell>
+                          <TableCell className="text-xs text-gray-500 max-w-xs truncate" title={fu.notes || undefined}>
+                            {fu.notes || '—'}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
         </div>
       ) : (
         <Card>
