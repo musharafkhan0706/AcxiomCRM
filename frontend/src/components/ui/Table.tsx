@@ -3,7 +3,7 @@ import { cn } from '../../utils/cn';
 
 export const Table: React.FC<React.TableHTMLAttributes<HTMLTableElement>> = ({ className, children, ...props }) => {
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto min-w-0">
       <table className={cn('w-full text-left text-sm text-slate-600', className)} {...props}>
         {children}
       </table>
@@ -37,7 +37,7 @@ export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement>> = ({ 
 
 export const TableHead: React.FC<React.ThHTMLAttributes<HTMLTableCellElement>> = ({ className, children, ...props }) => {
   return (
-    <th className={cn('px-6 py-3.5', className)} {...props}>
+    <th className={cn('px-3.5 sm:px-6 py-3 sm:py-3.5', className)} {...props}>
       {children}
     </th>
   );
@@ -45,7 +45,7 @@ export const TableHead: React.FC<React.ThHTMLAttributes<HTMLTableCellElement>> =
 
 export const TableCell: React.FC<React.TdHTMLAttributes<HTMLTableCellElement>> = ({ className, children, ...props }) => {
   return (
-    <td className={cn('px-6 py-4 whitespace-nowrap', className)} {...props}>
+    <td className={cn('px-3.5 sm:px-6 py-3 sm:py-4 whitespace-nowrap', className)} {...props}>
       {children}
     </td>
   );

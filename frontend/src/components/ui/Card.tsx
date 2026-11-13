@@ -22,7 +22,7 @@ export const Card: React.FC<CardProps> = ({ className, hoverable = false, childr
 
 export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => {
   return (
-    <div className={cn('px-6 py-4 border-b border-slate-100 flex items-center justify-between', className)} {...props}>
+    <div className={cn('px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 flex items-center justify-between', className)} {...props}>
       {children}
     </div>
   );
@@ -38,7 +38,7 @@ export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({ 
 
 export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => {
   return (
-    <div className={cn('p-6', className)} {...props}>
+    <div className={cn('p-4 sm:p-6', className)} {...props}>
       {children}
     </div>
   );

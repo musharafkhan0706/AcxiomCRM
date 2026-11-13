@@ -196,10 +196,10 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Banner with Scope & Period Filter */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-xl border border-gray-100 shadow-card">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 sm:p-5 rounded-xl border border-gray-100 shadow-card">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-gray-900 tracking-tight">{greeting.title}</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">{greeting.title}</h1>
             <span className="px-2 py-0.5 rounded text-xs font-semibold bg-brand-deep-teal/10 text-brand-deep-teal border border-brand-deep-teal/20">
               {user?.role?.replace('_', ' ')}
             </span>
@@ -208,9 +208,9 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Date Filter selector */}
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-gray-400" />
-          <div className="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50 p-1 text-xs">
+        <div className="flex items-center gap-2 overflow-x-auto max-w-full pb-1 sm:pb-0">
+          <Filter className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <div className="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50 p-1 text-xs whitespace-nowrap">
             {[
               { id: 'TODAY', label: 'Today' },
               { id: 'THIS_WEEK', label: 'Week' },
@@ -237,9 +237,9 @@ export const DashboardPage: React.FC = () => {
 
       {/* Overdue SLA Follow-ups Warning Banner */}
       {data.overdueFollowUpsCount > 0 && (
-        <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-300 rounded-xl text-amber-900 animate-in fade-in">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-amber-50 border border-amber-300 rounded-xl text-amber-900 animate-in fade-in">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-amber-100 rounded-lg text-amber-700">
+            <div className="p-2 bg-amber-100 rounded-lg text-amber-700 flex-shrink-0">
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
@@ -254,7 +254,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <Link
             to="/followups?tab=overdue"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white hover:bg-amber-700 transition-colors shadow-sm"
+            className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white hover:bg-amber-700 transition-colors shadow-sm whitespace-nowrap self-start sm:self-auto"
           >
             Review Overdue <ArrowRight className="w-3.5 h-3.5" />
           </Link>
@@ -294,7 +294,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Secondary KPI Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card flex items-center gap-3">
           <div className="p-2.5 rounded-lg bg-emerald-50 text-emerald-600">
             <CheckCircle2 className="w-5 h-5" />

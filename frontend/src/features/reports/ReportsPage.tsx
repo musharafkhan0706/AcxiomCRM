@@ -104,13 +104,13 @@ export const ReportsPage: React.FC = () => {
             Generate role-scoped audit extracts, pipeline stage analysis, and conversion velocity reports.
           </p>
         </div>
-        <Button onClick={exportCsv} variant="primary" className="flex items-center gap-2" disabled={!data}>
+        <Button onClick={exportCsv} variant="primary" className="flex items-center justify-center gap-2 w-full sm:w-auto" disabled={!data}>
           <FileSpreadsheet className="w-4 h-4" /> Export CSV Extract
         </Button>
       </div>
 
       {/* Category Tabs */}
-      <div className="flex border-b border-gray-200 gap-2 overflow-x-auto text-xs font-semibold">
+      <div className="flex items-center gap-2 border-b border-gray-200 pb-2 overflow-x-auto max-w-full text-xs font-semibold">
         {[
           { id: 'pipeline', label: 'Sales Pipeline Summary', icon: DollarSign },
           { id: 'leads', label: 'Lead Sourcing & Status', icon: Target },
@@ -122,14 +122,16 @@ export const ReportsPage: React.FC = () => {
           return (
             <button
               key={tab.id}
+              type="button"
               onClick={() => setActiveReport(tab.id as any)}
-              className={`flex items-center gap-2 py-3 px-3 border-b-2 transition-all whitespace-nowrap ${
+              aria-pressed={activeReport === tab.id}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all whitespace-nowrap flex-shrink-0 select-none ${
                 activeReport === tab.id
-                  ? 'border-brand-deep-teal text-brand-deep-teal'
-                  : 'border-transparent text-gray-500 hover:text-gray-900'
+                  ? 'bg-brand-teal bg-brand-deep-teal text-white shadow-sm hover:bg-brand-teal-600'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 bg-white/80 border border-gray-200'
               }`}
             >
-              <Icon className="w-3.5 h-3.5" />
+              <Icon className={`w-3.5 h-3.5 ${activeReport === tab.id ? 'text-white' : 'text-gray-500'}`} />
               {tab.label}
             </button>
           );
@@ -137,27 +139,27 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* Filter Row: Start Date & End Date */}
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card flex flex-wrap items-center gap-4 text-xs">
+      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-4 text-xs">
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-gray-400" />
           <span className="font-semibold text-gray-700">Filter Range:</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <label className="text-gray-500">From:</label>
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="border border-gray-200 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-deep-teal"
+            className="border border-gray-200 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-deep-teal w-full sm:w-auto"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <label className="text-gray-500">To:</label>
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="border border-gray-200 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-deep-teal"
+            className="border border-gray-200 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-deep-teal w-full sm:w-auto"
           />
         </div>
         {(startDate || endDate) && (
@@ -189,7 +191,7 @@ export const ReportsPage: React.FC = () => {
       ) : activeReport === 'pipeline' ? (
         <div className="space-y-6">
           {/* Pipeline Summary Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card">
               <p className="text-xs text-gray-500 font-medium">Total Pipeline Value</p>
               <p className="text-xl font-bold text-gray-900 mt-1">{formatCurrency(data.totalAmount || 0)}</p>
@@ -216,15 +218,15 @@ export const ReportsPage: React.FC = () => {
               <CardTitle className="text-sm font-bold text-gray-900">Stage Breakdown</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="divide-y divide-gray-100 text-xs">
-                <div className="grid grid-cols-3 p-3 bg-gray-50 font-bold text-gray-600">
+              <div className="divide-y divide-gray-100 text-xs overflow-x-auto min-w-0">
+                <div className="grid grid-cols-3 p-3 bg-gray-50 font-bold text-gray-600 min-w-[280px]">
                   <span>Pipeline Stage</span>
                   <span>Deal Count</span>
                   <span className="text-right">Stage Total Value</span>
                 </div>
                 {data.stages &&
                   Object.entries(data.stages).map(([stage, info]: any) => (
-                    <div key={stage} className="grid grid-cols-3 p-3 items-center hover:bg-gray-50/50">
+                    <div key={stage} className="grid grid-cols-3 p-3 items-center hover:bg-gray-50/50 min-w-[280px]">
                       <span className="font-semibold text-gray-800">{stage}</span>
                       <span className="text-gray-600">{info.count} deals</span>
                       <span className="text-right font-bold text-gray-900">{formatCurrency(info.totalAmount)}</span>
@@ -236,7 +238,7 @@ export const ReportsPage: React.FC = () => {
         </div>
       ) : activeReport === 'conversions' ? (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card">
               <p className="text-xs text-gray-500 font-medium">Total Captured Leads</p>
               <p className="text-xl font-bold text-gray-900 mt-1">{data.totalLeads || 0}</p>
@@ -259,7 +261,7 @@ export const ReportsPage: React.FC = () => {
         </div>
       ) : activeReport === 'leads' ? (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card">
               <p className="text-xs text-gray-500 font-medium">Total Inbound Leads</p>
               <p className="text-xl font-bold text-gray-900 mt-1">{data.totalLeads || 0}</p>
@@ -276,7 +278,7 @@ export const ReportsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-bold text-gray-900">Leads by Channel Source</CardTitle>

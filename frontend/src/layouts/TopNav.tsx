@@ -10,6 +10,7 @@ import {
   Building2,
   Target,
   TrendingUp,
+  Menu,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { StatusBadge } from '../components/ui/Badge';
@@ -18,7 +19,11 @@ import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import api from '../api/client';
 
-export const TopNav: React.FC = () => {
+export interface TopNavProps {
+  onOpenMobileMenu?: () => void;
+}
+
+export const TopNav: React.FC<TopNavProps> = ({ onOpenMobileMenu }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -81,10 +86,18 @@ export const TopNav: React.FC = () => {
   };
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200/80 px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs">
-      {/* Breadcrumb / Title */}
-      <div className="flex items-center gap-3">
-        <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+    <header className="h-16 bg-white border-b border-slate-200/80 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs">
+      {/* Breadcrumb / Title & Mobile Menu Button */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <button
+          type="button"
+          onClick={onOpenMobileMenu}
+          className="p-2 -ml-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors md:hidden flex-shrink-0"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        <h1 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 tracking-tight truncate">
           {getBreadcrumbTitle()}
         </h1>
       </div>
@@ -106,7 +119,7 @@ export const TopNav: React.FC = () => {
       </form>
 
       {/* Right Controls */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
         {/* Notifications */}
         <div className="relative">
           <button
@@ -119,7 +132,7 @@ export const TopNav: React.FC = () => {
           </button>
 
           {notificationOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50 animate-in fade-in zoom-in-95">
+            <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50 animate-in fade-in zoom-in-95">
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-800">System Notifications</span>
                 <span className="text-[10px] bg-brand-cyan/20 text-brand-teal px-2 py-0.5 rounded-full font-bold">Live</span>

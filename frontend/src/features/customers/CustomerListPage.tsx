@@ -166,13 +166,13 @@ export const CustomerListPage: React.FC = () => {
             Maintain high-value enterprise accounts, client profiles, and historical business relationships.
           </p>
         </div>
-        <Button onClick={handleOpenCreate} className="flex items-center gap-2">
+        <Button onClick={handleOpenCreate} className="flex items-center justify-center gap-2 w-full sm:w-auto">
           <Plus className="w-4 h-4" /> Add Customer
         </Button>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card flex flex-col md:flex-row gap-3 items-center justify-between">
+      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         <div className="relative w-full md:w-96">
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
           <input
@@ -199,9 +199,9 @@ export const CustomerListPage: React.FC = () => {
           )}
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full md:w-auto justify-between md:justify-end">
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-gray-400 hidden sm:block" />
+            <Filter className="w-4 h-4 text-gray-400 hidden sm:block flex-shrink-0" />
             <select
               value={statusFilter}
               onChange={(e) => {
@@ -217,7 +217,7 @@ export const CustomerListPage: React.FC = () => {
           </div>
 
           {/* Record Count Badge */}
-          <div className="text-xs text-gray-500 font-medium whitespace-nowrap px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
+          <div className="text-xs text-gray-500 font-medium whitespace-nowrap px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-center sm:text-left">
             Total Customers: <span className="font-bold text-gray-800">{data?.totalElements ?? 0}</span>
           </div>
         </div>
@@ -340,7 +340,7 @@ export const CustomerListPage: React.FC = () => {
             </Table>
 
             {/* Pagination footer */}
-            <div className="flex items-center justify-between px-6 py-3 border-t border-gray-100 text-xs text-gray-500 bg-gray-50/50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-6 py-3 border-t border-gray-100 text-xs text-gray-500 bg-gray-50/50">
               <p>
                 {data.totalElements === 0
                   ? 'Showing 0 records'

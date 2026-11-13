@@ -116,7 +116,7 @@ export const OpportunityListPage: React.FC = () => {
             Track multi-stage revenue opportunities, weighted forecasts, and deal closure probabilities.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
           {/* View Mode Toggle */}
           <div className="inline-flex items-center rounded-lg border border-gray-200 bg-gray-100/80 p-0.5 shadow-xs">
             <button
@@ -147,7 +147,7 @@ export const OpportunityListPage: React.FC = () => {
             </button>
           </div>
 
-          <Button onClick={handleOpenCreate} className="flex items-center gap-2">
+          <Button onClick={handleOpenCreate} className="flex items-center justify-center gap-2 flex-1 sm:flex-initial">
             <Plus className="w-4 h-4" /> Add Opportunity
           </Button>
         </div>
@@ -155,7 +155,7 @@ export const OpportunityListPage: React.FC = () => {
 
       {/* Summary KPI Strip */}
       {pipelineSummary && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card flex items-center gap-3">
             <div className="p-2.5 rounded-lg bg-teal-50 text-brand-deep-teal">
               <DollarSign className="w-5 h-5" />
@@ -167,7 +167,7 @@ export const OpportunityListPage: React.FC = () => {
           </div>
 
           <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-cyan-50 text-brand-bright-cyan">
+            <div className="p-2.5 rounded-lg bg-cyan-50 text-cyan-700">
               <TrendingUp className="w-5 h-5" />
             </div>
             <div>
@@ -199,7 +199,7 @@ export const OpportunityListPage: React.FC = () => {
       )}
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card flex flex-col md:flex-row gap-3 items-center justify-between">
+      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         <div className="relative w-full md:w-80">
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
           <input
@@ -327,7 +327,7 @@ export const OpportunityListPage: React.FC = () => {
           </Table>
 
           {/* List Pagination */}
-          <div className="flex items-center justify-between px-6 py-3 border-t border-gray-100 text-xs text-gray-500 bg-gray-50/50">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-6 py-3 border-t border-gray-100 text-xs text-gray-500 bg-gray-50/50">
             <p>
               Showing {data.page * data.size + 1} to {Math.min((data.page + 1) * data.size, data.totalElements)} of{' '}
               {data.totalElements} records

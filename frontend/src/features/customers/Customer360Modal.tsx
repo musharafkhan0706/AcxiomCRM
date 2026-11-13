@@ -73,7 +73,7 @@ export const Customer360Modal: React.FC<Customer360ModalProps> = ({ isOpen, onCl
       ) : (
         <div className="space-y-6">
           {/* Navigation Tabs */}
-          <div className="flex border-b border-gray-200 overflow-x-auto gap-2">
+          <div className="flex items-center gap-2 border-b border-gray-200 pb-2 overflow-x-auto max-w-full text-xs">
             {[
               { id: 'overview', label: 'Overview', icon: Building },
               { id: 'opportunities', label: `Deals (${(data.opportunities || []).length})`, icon: Briefcase },
@@ -86,14 +86,16 @@ export const Customer360Modal: React.FC<Customer360ModalProps> = ({ isOpen, onCl
               return (
                 <button
                   key={tab.id}
+                  type="button"
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 py-2.5 px-3 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
+                  aria-pressed={activeTab === tab.id}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg font-semibold transition-all whitespace-nowrap flex-shrink-0 select-none ${
                     activeTab === tab.id
-                      ? 'border-brand-deep-teal text-brand-deep-teal'
-                      : 'border-transparent text-gray-500 hover:text-gray-900'
+                      ? 'bg-brand-teal bg-brand-deep-teal text-white shadow-sm hover:bg-brand-teal-600'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 bg-white/80 border border-gray-200'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className={`w-3.5 h-3.5 ${activeTab === tab.id ? 'text-white' : 'text-gray-500'}`} />
                   {tab.label}
                 </button>
               );

@@ -109,14 +109,14 @@ export const UserListPage: React.FC = () => {
             setSelectedUser(null);
             setFormModalOpen(true);
           }}
-          className="flex items-center gap-2"
+          className="flex items-center justify-center gap-2 w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" /> Provision User
         </Button>
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card flex items-center justify-between">
+      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
           <input
@@ -127,7 +127,7 @@ export const UserListPage: React.FC = () => {
             className="w-full pl-9 pr-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-deep-teal/20"
           />
         </div>
-        <div className="text-xs text-gray-500 font-medium">
+        <div className="text-xs text-gray-500 font-medium text-center sm:text-right">
           Total Users: <span className="font-bold text-gray-800">{filteredUsers.length}</span>
         </div>
       </div>
@@ -212,9 +212,10 @@ export const UserListPage: React.FC = () => {
                     <div className="flex items-center justify-end gap-1">
                       {/* Active Toggle */}
                       <button
+                        type="button"
                         onClick={() => statusMutation.mutate({ id: u.id, active: !u.active })}
                         className={`p-1.5 rounded-md transition-colors ${
-                          u.active ? 'text-gray-400 hover:text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'
+                          u.active ? 'text-gray-500 hover:text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'
                         }`}
                         title={u.active ? 'Deactivate User' : 'Activate User'}
                       >
@@ -223,11 +224,12 @@ export const UserListPage: React.FC = () => {
 
                       {/* Reset Password */}
                       <button
+                        type="button"
                         onClick={() => {
                           setUserToReset(u);
                           setResetModalOpen(true);
                         }}
-                        className="p-1.5 text-brand-deep-teal hover:bg-teal-50 rounded-md transition-colors"
+                        className="p-1.5 text-brand-teal hover:bg-teal-50 rounded-md transition-colors"
                         title="Reset User Password"
                       >
                         <KeyRound className="w-4 h-4" />
@@ -235,6 +237,7 @@ export const UserListPage: React.FC = () => {
 
                       {/* Edit User */}
                       <button
+                        type="button"
                         onClick={() => {
                           setSelectedUser(u);
                           setFormModalOpen(true);

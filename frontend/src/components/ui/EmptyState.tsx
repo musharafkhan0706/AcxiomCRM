@@ -23,10 +23,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   className,
 }) => {
   const renderIcon = () => {
-    if (!icon) return <PackageOpen className="w-8 h-8 text-brand-deep-teal" />;
+    if (!icon) return <PackageOpen className="w-8 h-8 text-brand-teal" />;
     if (React.isValidElement(icon)) return icon;
     const IconComp = icon;
-    return <IconComp className="w-8 h-8 text-brand-deep-teal" />;
+    return <IconComp className="w-8 h-8 text-brand-teal" />;
   };
 
   return (

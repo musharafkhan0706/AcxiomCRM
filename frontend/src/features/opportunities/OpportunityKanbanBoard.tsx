@@ -24,12 +24,12 @@ interface OpportunityKanbanBoardProps {
   onDelete: (opp: Opportunity) => void;
 }
 
-const STAGES: { id: OpportunityStage; label: string; color: string; border: string }[] = [
-  { id: 'QUALIFICATION', label: '1. Qualification', color: 'bg-teal-50 text-teal-900', border: 'border-brand-teal' },
-  { id: 'PROPOSAL', label: '2. Proposal', color: 'bg-cyan-50 text-cyan-900', border: 'border-brand-cyan' },
-  { id: 'NEGOTIATION', label: '3. Negotiation', color: 'bg-amber-50 text-amber-900', border: 'border-amber-400' },
-  { id: 'WON', label: '4. Closed Won', color: 'bg-emerald-50 text-emerald-900', border: 'border-emerald-500' },
-  { id: 'LOST', label: '5. Closed Lost', color: 'bg-rose-50 text-rose-900', border: 'border-rose-400' },
+const STAGES: { id: OpportunityStage; label: string; color: string; border: string; topBorderColor: string }[] = [
+  { id: 'QUALIFICATION', label: '1. Qualification', color: 'bg-teal-50 text-teal-900', border: 'border-t-brand-teal', topBorderColor: '#097C87' },
+  { id: 'PROPOSAL', label: '2. Proposal', color: 'bg-cyan-50 text-cyan-900', border: 'border-t-brand-cyan', topBorderColor: '#23CED9' },
+  { id: 'NEGOTIATION', label: '3. Negotiation', color: 'bg-amber-50 text-amber-900', border: 'border-t-amber-500', topBorderColor: '#f59e0b' },
+  { id: 'WON', label: '4. Closed Won', color: 'bg-emerald-50 text-emerald-900', border: 'border-t-emerald-500', topBorderColor: '#10b981' },
+  { id: 'LOST', label: '5. Closed Lost', color: 'bg-rose-50 text-rose-900', border: 'border-t-rose-500', topBorderColor: '#f43f5e' },
 ];
 
 export const OpportunityKanbanBoard: React.FC<OpportunityKanbanBoardProps> = ({
@@ -67,7 +67,7 @@ export const OpportunityKanbanBoard: React.FC<OpportunityKanbanBoardProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-start overflow-x-auto pb-4">
+    <div className="flex md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 items-start overflow-x-auto pb-4 max-w-full min-w-0">
       {STAGES.map((col, index) => {
         const columnOpps = opportunities.filter((o) => o.stage === col.id);
         const columnTotal = columnOpps.reduce((sum, o) => sum + Number(o.amount), 0);
@@ -75,10 +75,13 @@ export const OpportunityKanbanBoard: React.FC<OpportunityKanbanBoardProps> = ({
         return (
           <div
             key={col.id}
-            className="flex flex-col bg-gray-50/70 border border-gray-200/70 rounded-xl min-w-[260px] max-h-[calc(100vh-280px)]"
+            className="flex flex-col bg-gray-50/70 border border-gray-200/70 rounded-xl w-[280px] sm:w-[300px] md:w-auto flex-shrink-0 md:flex-shrink min-w-[260px] max-h-[calc(100vh-280px)]"
           >
             {/* Column Header */}
-            <div className={`p-3.5 border-t-4 rounded-t-xl bg-white border-b border-gray-100 shadow-xs ${col.border}`}>
+            <div
+              className={`p-3.5 border-t-4 rounded-t-xl bg-white border-b border-b-gray-100 shadow-xs ${col.border}`}
+              style={{ borderTopColor: col.topBorderColor }}
+            >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-gray-800">{col.label}</span>
                 <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-700">

@@ -93,14 +93,14 @@ export const ActivityListPage: React.FC = () => {
             setSelectedActivity(null);
             setFormModalOpen(true);
           }}
-          className="flex items-center gap-2"
+          className="flex items-center justify-center gap-2 w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" /> Log Activity
         </Button>
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-gray-200 pb-2 overflow-x-auto text-xs">
+      <div className="flex items-center gap-2 border-b border-gray-200 pb-2 overflow-x-auto max-w-full text-xs">
         {[
           { id: '', label: 'All Activities' },
           { id: 'CALL', label: 'Phone Calls' },
@@ -110,11 +110,13 @@ export const ActivityListPage: React.FC = () => {
         ].map((tab) => (
           <button
             key={tab.id}
+            type="button"
             onClick={() => setTypeFilter(tab.id)}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
+            aria-pressed={typeFilter === tab.id}
+            className={`px-3 py-1.5 rounded-lg font-semibold transition-all whitespace-nowrap flex-shrink-0 select-none ${
               typeFilter === tab.id
-                ? 'bg-brand-deep-teal text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                ? 'bg-brand-teal bg-brand-deep-teal text-white shadow-sm hover:bg-brand-teal-600'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 bg-white/80 border border-gray-200'
             }`}
           >
             {tab.label}

@@ -124,13 +124,13 @@ export const LeadListPage: React.FC = () => {
             Capture, qualify, assign, and convert new revenue inquiries through your sales funnel.
           </p>
         </div>
-        <Button onClick={handleOpenCreate} className="flex items-center gap-2">
+        <Button onClick={handleOpenCreate} className="flex items-center justify-center gap-2 w-full sm:w-auto">
           <Plus className="w-4 h-4" /> Add Lead
         </Button>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card flex flex-col lg:flex-row gap-3 items-center justify-between">
+      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-card flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
         <div className="relative w-full lg:w-80">
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
           <input
@@ -145,14 +145,14 @@ export const LeadListPage: React.FC = () => {
           />
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full lg:w-auto">
+        <div className="flex flex-wrap sm:flex-nowrap gap-2 w-full lg:w-auto">
           <select
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setPage(0);
             }}
-            className="text-xs border border-gray-200 rounded-lg px-2.5 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-deep-teal/20"
+            className="text-xs border border-gray-200 rounded-lg px-2.5 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-deep-teal/20 min-w-[120px] flex-1 sm:flex-initial"
           >
             <option value="">All Statuses</option>
             <option value="NEW">New</option>
@@ -169,7 +169,7 @@ export const LeadListPage: React.FC = () => {
               setPriorityFilter(e.target.value);
               setPage(0);
             }}
-            className="text-xs border border-gray-200 rounded-lg px-2.5 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-deep-teal/20"
+            className="text-xs border border-gray-200 rounded-lg px-2.5 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-deep-teal/20 min-w-[120px] flex-1 sm:flex-initial"
           >
             <option value="">All Priorities</option>
             <option value="HIGH">High Priority</option>
@@ -183,7 +183,7 @@ export const LeadListPage: React.FC = () => {
               setSourceFilter(e.target.value);
               setPage(0);
             }}
-            className="text-xs border border-gray-200 rounded-lg px-2.5 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-deep-teal/20"
+            className="text-xs border border-gray-200 rounded-lg px-2.5 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-deep-teal/20 min-w-[120px] flex-1 sm:flex-initial"
           >
             <option value="">All Sources</option>
             <option value="WEBSITE">Website</option>
@@ -318,7 +318,7 @@ export const LeadListPage: React.FC = () => {
             </Table>
 
             {/* Pagination footer */}
-            <div className="flex items-center justify-between px-6 py-3 border-t border-gray-100 text-xs text-gray-500 bg-gray-50/50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-6 py-3 border-t border-gray-100 text-xs text-gray-500 bg-gray-50/50">
               <p>
                 Showing {data.page * data.size + 1} to {Math.min((data.page + 1) * data.size, data.totalElements)} of{' '}
                 {data.totalElements} records

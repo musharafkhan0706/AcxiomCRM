@@ -34,15 +34,15 @@ export const AuditDetailModal: React.FC<AuditDetailModalProps> = ({ isOpen, onCl
         {/* Metadata summary grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50 p-3 rounded-lg border border-gray-100">
           <div>
-            <span className="text-gray-400 block font-medium">Actor</span>
+            <span className="text-gray-500 block font-medium">Actor</span>
             <span className="font-bold text-gray-900">{audit.username || 'System'}</span>
           </div>
           <div>
-            <span className="text-gray-400 block font-medium">Record ID</span>
+            <span className="text-gray-500 block font-medium">Record ID</span>
             <span className="font-bold text-gray-900">{audit.recordId || 'N/A'}</span>
           </div>
           <div>
-            <span className="text-gray-400 block font-medium">Status</span>
+            <span className="text-gray-500 block font-medium">Status</span>
             <span
               className={`font-bold ${audit.result === 'SUCCESS' ? 'text-emerald-600' : 'text-rose-600'}`}
             >
@@ -50,7 +50,7 @@ export const AuditDetailModal: React.FC<AuditDetailModalProps> = ({ isOpen, onCl
             </span>
           </div>
           <div>
-            <span className="text-gray-400 block font-medium">Timestamp</span>
+            <span className="text-gray-500 block font-medium">Timestamp</span>
             <span className="font-semibold text-gray-700">{formatDate(audit.timestamp)}</span>
           </div>
         </div>
@@ -82,7 +82,7 @@ export const AuditDetailModal: React.FC<AuditDetailModalProps> = ({ isOpen, onCl
         </div>
 
         <div className="flex justify-end pt-3 border-t border-gray-100">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
             Close Inspection
           </Button>
         </div>
